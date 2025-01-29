@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NutriQuest", "NutriQuest\NutriQuest.csproj", "{7DDE56E1-2F2F-42CB-B590-AD25E5B42145}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7DDE56E1-2F2F-42CB-B590-AD25E5B42145}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DDE56E1-2F2F-42CB-B590-AD25E5B42145}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DDE56E1-2F2F-42CB-B590-AD25E5B42145}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DDE56E1-2F2F-42CB-B590-AD25E5B42145}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A6A7E5F4-EE3A-4F4B-896B-A5671221E450}
+	EndGlobalSection
+EndGlobal
