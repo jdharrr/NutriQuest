@@ -1,8 +1,9 @@
-﻿namespace NutriQuest.DatabaseService.Models;
+﻿using MongoDB.Bson.Serialization.Attributes;
 
+namespace NutriQuest.DatabaseService.Models;
+
+[BsonIgnoreExtraElements]
 public class FoodItem : BaseModel, IMongoDocument
 {
-    public string CollectionName => "foodItem";
-
-    public required string Name { get; set; }
+    public static string CollectionName => "products";
 }

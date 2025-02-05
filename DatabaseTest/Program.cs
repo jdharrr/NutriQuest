@@ -1,10 +1,13 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using NutriQuest.DatabaseService;
 using NutriQuest.DatabaseService.Models;
 
-var mongoService = new MongoService("mongodb+srv://jharr:52-Ochre-4765@capstone2025.noiwb.mongodb.net/", "nutriQuest");
+var mongoService = new MongoService("mongodb://localhost:27017/", "foodFacts");
 var foodItemRepository = new DatabaseService<FoodItem>(mongoService);
 
-var foodItem = new FoodItem { Name = "Apple" };
+//var response = await foodItemRepository.DeleteManyAsync(
+    
+//);
 
-var apple = await foodItemRepository.FindOneAsync(Builders<FoodItem>.Filter.Eq(x => x.Name, "Apple"));
+Console.WriteLine();

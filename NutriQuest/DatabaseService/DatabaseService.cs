@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Driver;
 using NutriQuest.DatabaseService.Models;
 using NutriQuest.DatabaseService.Responses;
 
@@ -11,12 +12,7 @@ public class DatabaseService<TModel>
 
     public DatabaseService(MongoService service)
     {
-        // gotta be a better way to do this
-        // works for now
-        var modelInstance = Activator.CreateInstance<TModel>();
-        var collectionName = modelInstance.CollectionName;
-
-        _collection = service.Database.GetCollection<TModel>(collectionName);
+        _collection = service.Database.GetCollection<TModel>(TModel.CollectionName);
     }
 
     public async Task InsertOneAsync(TModel model, CancellationToken cancellationToken = default)
@@ -29,14 +25,27 @@ public class DatabaseService<TModel>
         await _collection.InsertManyAsync(models, options, cancellationToken);
     }
 
-    public async Task<TModel?> FindOneAsync(FilterDefinition<TModel> filter, FindOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TModel?> FindOneAsync(FilterDefinition<TModel> filter, FindOptions<TModel>? options = null, CancellationToken cancellationToken = default)
     {
-        return (await FindAsync(filter, options, cancellationToken)).FirstOrDefault();
+        return await Find(filter, options).FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<List<TModel>> FindAsync(FilterDefinition<TModel> filter, FindOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<List<TModel>> FindAsync(FilterDefinition<TModel> filter, FindOptions<TModel>? options = null, CancellationToken cancellationToken = default)
     {
-        return await _collection.Find(filter, options).ToListAsync(cancellationToken);
+        return await Find(filter, options).ToListAsync(cancellationToken);
+    }
+
+    private IFindFluent<TModel, TModel> Find(FilterDefinition<TModel> filter, FindOptions<TModel>? options = null)
+    {
+        var findFluent = _collection.Find(filter);
+        if (options != null)
+        {
+            findFluent.Limit(options.Limit);
+            findFluent.Skip(options.Skip);
+            findFluent.Sort(options.Sort);
+        }
+
+        return findFluent;
     }
 
     public async Task<long> DeleteOne(FilterDefinition<TModel> filter, DeleteOptions? options = null, CancellationToken cancellationToken = default)

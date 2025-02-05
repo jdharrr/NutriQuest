@@ -2,5 +2,5 @@
 
 public interface IMongoDocument
 {
-    public string CollectionName { get; }
+    static abstract string? CollectionName { get; }
 }
