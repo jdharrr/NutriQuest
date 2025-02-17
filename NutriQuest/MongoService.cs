@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 
-namespace NutriQuest.DatabaseService;
+namespace DatabaseService;
 
 public class MongoService
 {

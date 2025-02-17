@@ -1,9 +1,8 @@
-﻿using MongoDB.Bson.Serialization.Conventions;
+﻿using DatabaseService.Models;
+using DatabaseService.Responses;
 using MongoDB.Driver;
-using NutriQuest.DatabaseService.Models;
-using NutriQuest.DatabaseService.Responses;
 
-namespace NutriQuest.DatabaseService;
+namespace DatabaseService;
 
 public class DatabaseService<TModel>
     where TModel : IMongoDocument
@@ -53,7 +52,7 @@ public class DatabaseService<TModel>
         var result = await _collection.DeleteOneAsync(filter, options, cancellationToken);
         if (!result.IsAcknowledged)
             return 0;
-            
+
         return result.DeletedCount;
     }
 

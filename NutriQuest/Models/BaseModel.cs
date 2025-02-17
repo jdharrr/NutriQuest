@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace NutriQuest.DatabaseService.Models;
+namespace DatabaseService.Models;
 
 public class BaseModel
 {

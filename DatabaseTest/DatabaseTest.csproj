@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NutriQuest\NutriQuest.csproj" />
+    <ProjectReference Include="..\NutriQuest\DatabaseService.csproj" />
   </ItemGroup>
 
 </Project>

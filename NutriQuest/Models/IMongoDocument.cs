@@ -1,4 +1,4 @@
-﻿namespace NutriQuest.DatabaseService.Models;
+﻿namespace DatabaseService.Models;
 
 public interface IMongoDocument
 {
