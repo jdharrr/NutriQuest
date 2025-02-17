@@ -2,7 +2,7 @@
 using MongoDB.Bson.Serialization.Attributes;
 using System.Collections.Generic;
 
-namespace DatabaseService.Models.Old;
+namespace DatabaseServices.Models.Old;
 
 [BsonIgnoreExtraElements]
 public class ImageMetadata_old

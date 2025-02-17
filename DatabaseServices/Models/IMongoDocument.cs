@@ -1,4 +1,4 @@
-﻿namespace DatabaseService.Models;
+﻿namespace DatabaseServices.Models;
 
 public interface IMongoDocument
 {

@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace DatabaseService.Models.Old;
+namespace DatabaseServices.Models.Old;
 
 [BsonIgnoreExtraElements]
 public class Images_old

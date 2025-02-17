@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 
-namespace DatabaseService.Models;
+namespace DatabaseServices.Models;
 
 public enum ImageType
 {

@@ -1,10 +1,13 @@
+using NutriQuestAPI;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Dependency Injections
+builder.Services.ConfigureDatabase(builder.Configuration);
+builder.Services.ConfigureServices();
 
+// Other Services
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
@@ -18,7 +21,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+//app.UseAuthorization();
 
 app.MapControllers();
 

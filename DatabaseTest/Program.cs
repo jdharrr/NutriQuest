@@ -1,8 +1,8 @@
-﻿using DatabaseService.Models;
+﻿using DatabaseServices.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using DatabaseService;
-using DatabaseService.Models.Old;
+using DatabaseServices;
+using DatabaseServices.Models.Old;
 
 var mongoServiceOld = new MongoService("mongodb+srv://jharr:52-Ochre-4765@capstone2025.noiwb.mongodb.net/", "nutriQuest");
 var oldRepo = new DatabaseService<FoodItem_old>(mongoServiceOld);
@@ -39,7 +39,7 @@ while (true)
             Keywords = item._keywords.ToList(),
             MaxImgId = item.max_imgid,
             TracesFromIngredients = item.traces_from_ingredients,
-            IngredientsTextWithAllergens = item.ingredients_text_with_allergens_en != string.Empty 
+            IngredientsTextWithAllergens = item.ingredients_text_with_allergens_en != string.Empty
                                                 ? item.ingredients_text_with_allergens_en
                                                 : item.ingredients_text_with_allergens,
             Code = item.code,

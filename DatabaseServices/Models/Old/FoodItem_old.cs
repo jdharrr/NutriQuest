@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 
-namespace DatabaseService.Models.Old;
+namespace DatabaseServices.Models.Old;
 
 [BsonIgnoreExtraElements]
 public class FoodItem_old : BaseModel, IMongoDocument

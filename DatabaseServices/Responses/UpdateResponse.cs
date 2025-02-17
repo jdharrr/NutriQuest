@@ -1,4 +1,4 @@
-﻿namespace DatabaseService.Responses;
+﻿namespace DatabaseServices.Responses;
 
 public class UpdateResponse
 {
