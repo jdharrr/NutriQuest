@@ -28,21 +28,41 @@ public class DatabaseService<TModel>
     {
         return await Find(filter, options).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false); ;
     }
-
     public async Task<List<TModel>> FindAsync(FilterDefinition<TModel> filter, FindOptions<TModel>? options = null, CancellationToken cancellationToken = default)
     {
         return await Find(filter, options).ToListAsync(cancellationToken).ConfigureAwait(false); ;
     }
-
     private IFindFluent<TModel, TModel> Find(FilterDefinition<TModel> filter, FindOptions<TModel>? options = null)
     {
-        var findFluent = _collection.Find(filter);
+        var findFluent = options?.Projection != null ? _collection.Find(filter).Project(options.Projection)
+                                                     : _collection.Find(filter);
         if (options != null)
         {
             findFluent.Limit(options.Limit);
             findFluent.Skip(options.Skip);
             findFluent.Sort(options.Sort);
         }
+
+        return findFluent;
+    }
+
+    // For finding and projecting to different data types
+    public async Task<TProjection> FindOneAsync<TProjection>(FilterDefinition<TModel> filter, FindOptions<TModel, TProjection> options, CancellationToken cancellationToken = default)
+    {
+        return await Find(filter, options).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<List<TProjection>> FindAsync<TProjection>(FilterDefinition<TModel> filter, FindOptions<TModel, TProjection> options, CancellationToken cancellationToken = default)
+    {
+        return await Find(filter, options).ToListAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private IFindFluent<TModel, TProjection> Find<TProjection>(FilterDefinition<TModel> filter, FindOptions<TModel, TProjection> options)
+    {
+        var findFluent = _collection.Find(filter).Project(options.Projection);
+        findFluent.Limit(options.Limit);
+        findFluent.Skip(options.Skip);
+        findFluent.Sort(options.Sort);
 
         return findFluent;
     }

@@ -8,7 +8,7 @@ namespace NutriQuestAPI.Controllers;
 [Route("nutriQuestApi/foodItems")]
 public class FoodItemsController : ControllerBase
 {
-    FoodService _foodService;
+    private readonly FoodService _foodService;
 
     public FoodItemsController(FoodService foodService)
     {
