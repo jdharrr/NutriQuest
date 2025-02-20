@@ -16,12 +16,12 @@ public class FoodItemsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetFoodItemById(string id)
+    public async Task<IActionResult> GetFoodItemByIdAsync(string id)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(id, out var _))
             return BadRequest("Invalid Parameter");
 
-        FoodItem? item = await _foodService.GetFoodItemById(id).ConfigureAwait(false);
+        FoodItem? item = await _foodService.GetFoodItemByIdAsync(id).ConfigureAwait(false);
         if (item == null)
             return NotFound();
 

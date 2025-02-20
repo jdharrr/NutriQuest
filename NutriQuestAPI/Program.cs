@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Dependency Injections
 builder.Services.ConfigureDatabase(builder.Configuration);
 builder.Services.ConfigureServices();
+builder.Services.ConfigureGoogleApi(builder.Configuration);
 
 // Other Services
 builder.Services.AddControllers();

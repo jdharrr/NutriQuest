@@ -6,14 +6,14 @@ namespace NutriQuestServices;
 
 public class FoodService
 {
-    DatabaseService<FoodItem> _dbService;
+    private readonly DatabaseService<FoodItem> _dbService;
 
     public FoodService(DatabaseService<FoodItem> databaseService)
     {
         _dbService = databaseService;
     }
 
-    public async Task<FoodItem?> GetFoodItemById(string id)
+    public async Task<FoodItem?> GetFoodItemByIdAsync(string id)
     {
         var filter = Builders<FoodItem>.Filter.Eq(x => x.Id, id);
 
