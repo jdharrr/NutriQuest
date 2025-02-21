@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace NutriQuestAPI.Controllers;
 
 [ApiController]
-[Route("nutriQuest/geolocation")]
+[Route("nutriQuestApi/geolocation")]
 public class GeolocationController : ControllerBase
 {
     private readonly GeolocationService _locationService; 

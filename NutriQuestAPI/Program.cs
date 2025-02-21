@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.ConfigureDatabase(builder.Configuration);
 builder.Services.ConfigureServices();
 builder.Services.ConfigureGoogleApi(builder.Configuration);
+builder.Services.ConfigureRedis(builder.Configuration);
 
 // Other Services
 builder.Services.AddControllers();

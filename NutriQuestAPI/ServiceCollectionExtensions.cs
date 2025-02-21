@@ -1,6 +1,7 @@
 ﻿using DatabaseServices;
 using GeolocationServices;
 using NutriQuestServices;
+using StackExchange.Redis;
 
 namespace NutriQuestAPI;
 
@@ -30,6 +31,15 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<GoogleApi>();
         services.AddScoped<GoogleApi>();
         
+        return services;
+    }
+
+    public static IServiceCollection ConfigureRedis(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+            ConnectionMultiplexer.Connect(configuration["RedisConnectionString"]!)
+        );
+
         return services;
     }
 }
