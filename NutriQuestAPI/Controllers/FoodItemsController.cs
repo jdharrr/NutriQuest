@@ -27,4 +27,10 @@ public class FoodItemsController : ControllerBase
 
         return Ok(item);
     }
+
+    [HttpGet("{prevPage:bool?}")]
+    public async Task<IActionResult> GetFoodItemPreviewsAsync(bool prevPage = false)
+    {
+        return Ok(await _foodService.GetFoodItemPreviewsAsync(prevPage));
+    }
 }

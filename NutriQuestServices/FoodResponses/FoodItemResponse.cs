@@ -2,6 +2,8 @@ namespace NutriQuestServices.FoodResponses;
 
 public class FoodItemPreviewResponse
 {
+    public string? Id { get; set; }
+    
     public string? Name { get; set; }
 
     public double? Price { get; set; }

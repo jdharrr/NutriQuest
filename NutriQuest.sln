@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationServices", "A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeolocationServices", "GeolocationServices\GeolocationServices.csproj", "{0E79B1E0-DE84-42E0-A275-FA8A456CCC61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheServices", "CacheServices\CacheServices.csproj", "{21A2AF3D-6BF7-441D-948E-7DD45E493B08}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{0E79B1E0-DE84-42E0-A275-FA8A456CCC61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E79B1E0-DE84-42E0-A275-FA8A456CCC61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E79B1E0-DE84-42E0-A275-FA8A456CCC61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21A2AF3D-6BF7-441D-948E-7DD45E493B08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21A2AF3D-6BF7-441D-948E-7DD45E493B08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21A2AF3D-6BF7-441D-948E-7DD45E493B08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21A2AF3D-6BF7-441D-948E-7DD45E493B08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

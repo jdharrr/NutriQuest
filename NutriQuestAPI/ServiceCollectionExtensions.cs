@@ -1,5 +1,7 @@
-﻿using DatabaseServices;
+﻿using CacheServices;
+using DatabaseServices;
 using GeolocationServices;
+using Microsoft.Extensions.Options;
 using NutriQuestServices;
 using StackExchange.Redis;
 
@@ -16,7 +18,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection ConfigureServices(this IServiceCollection services)
+    public static IServiceCollection ConfigureNutriQuestServices(this IServiceCollection services)
     {
         services.AddScoped<FoodService>();
         services.AddScoped<StoreService>();
@@ -36,9 +38,16 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection ConfigureRedis(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<RedisSettings>(configuration.GetSection("ConnectionStrings"));
         services.AddSingleton<IConnectionMultiplexer>(sp =>
-            ConnectionMultiplexer.Connect(configuration["RedisConnectionString"]!)
-        );
+        {
+            var settings = sp.GetRequiredService<IOptions<RedisSettings>>().Value;
+            var options = ConfigurationOptions.Parse(settings.RedisConnection);
+            
+
+            return ConnectionMultiplexer.Connect(options);
+        });
+        services.AddScoped<CacheService>();
 
         return services;
     }

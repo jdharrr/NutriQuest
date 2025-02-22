@@ -4,9 +4,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Dependency Injections
 builder.Services.ConfigureDatabase(builder.Configuration);
-builder.Services.ConfigureServices();
-builder.Services.ConfigureGoogleApi(builder.Configuration);
 builder.Services.ConfigureRedis(builder.Configuration);
+builder.Services.ConfigureGoogleApi(builder.Configuration);
+builder.Services.ConfigureNutriQuestServices();
 
 // Other Services
 builder.Services.AddControllers();
