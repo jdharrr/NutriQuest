@@ -1,6 +1,7 @@
 ﻿using CacheServices;
 using DatabaseServices;
 using GeolocationServices;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using NutriQuestServices;
 using StackExchange.Redis;
@@ -23,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<FoodService>();
         services.AddScoped<StoreService>();
         services.AddScoped<GeolocationService>();
+        services.AddScoped<AuthenticationService>();
 
         return services;
     }

@@ -47,20 +47,17 @@ public class FoodService
     }
     
     // TODO: Make the cache values user based. Currently all connections to the api are using same cache keys.
-    public async Task<List<FoodItemPreviewResponse>> GetFoodItemPreviewsAsync(bool prevPage)
+    // Also not working fully:(
+    public async Task<List<FoodItemPreviewResponse>> GetFoodItemPreviewsAsync(string userId, bool prevPage)
     {
-        var idsShownValue = await _cache.GetCacheValue(_idsShownKey);
+        var idsShownValue = await _cache.GetCacheValue($"{_idsShownKey}-{userId}");
         List<string> idsShown = [];
         if (!string.IsNullOrEmpty(idsShownValue))
             idsShown = idsShownValue.Split(',').ToList();
-
-        if (prevPage == true && idsShown.Count == 0)
-            return [];
         
         var findOptions = new FindOptions<FoodItem, FoodItemPreviewResponse>
         {
             Limit = _itemsPerPage,
-            Sort = Builders<FoodItem>.Sort.Ascending(x => x.Id),
             Projection = Builders<FoodItem>.Projection.Expression(x =>
                 new FoodItemPreviewResponse
                 {
@@ -74,38 +71,37 @@ public class FoodService
         };
 
         FilterDefinition<FoodItem> filter;
-        if (idsShown.Count == 0)
+        if (idsShown.Count == 0 || (idsShown.Count == 0 && prevPage == true))
         {
             filter = Builders<FoodItem>.Filter.Empty;
         }
         else if (prevPage == true)
         {
-            if (idsShown.Count < 3)
+            if (idsShown.Count < 2)
             {
+                idsShown.Clear();
                 filter = Builders<FoodItem>.Filter.Empty;
             }
             else
             {
-                var prevLastIdShown = idsShown[^3];
+                var prevLastIdShown = idsShown[^2];
                 idsShown.RemoveAt(idsShown.Count - 1);
                 filter = Builders<FoodItem>.Filter.Gt(x => x.Id, prevLastIdShown);
             }
         }
         else
         {
-            filter = Builders<FoodItem>.Filter.Gt(x => x.Id, idsShown[^1]);
+            filter = Builders<FoodItem>.Filter.Gt(x => x.Id, idsShown.Last());
         }
 
         var foodItems = await _dbService.FindAsync(filter, findOptions);
         if (foodItems.Count == 0)
             return [];
         
-        if (prevPage != true)
-        {
+        if (!prevPage)
             idsShown.Add(foodItems.Last().Id!);
-        }
-
-        await _cache.SetCacheValue(_idsShownKey, string.Join(',', idsShown));
+        
+        await _cache.SetCacheValue($"{_idsShownKey}-{userId}", string.Join(',', idsShown));
 
         return foodItems;
     }
