@@ -2,8 +2,10 @@
 using DatabaseServices;
 using DatabaseServices.Models;
 using MongoDB.Driver;
+using NutriQuestServices.FoodRequests;
 using NutriQuestServices.FoodResponses;
-using StackExchange.Redis;
+using NutriQuestServices.ProjectionModels;
+using System.Text.RegularExpressions;
 
 namespace NutriQuestServices;
 
@@ -11,11 +13,23 @@ public class FoodService
 {
     private readonly DatabaseService<FoodItem> _dbService;
     
-    private readonly string _idsShownKey = "idsShown";
-    
     private readonly CacheService _cache;
+    
+    private readonly string _idsShownKey = "idsShown";
 
     private readonly int _itemsPerPage = 9;
+
+    private readonly string _imageBaseUrl = "https://images.openfoodfacts.org/images/products";
+
+    private readonly string _frontImageName = "front_en";
+
+    private readonly string _nutritionImageName = "nutrition_en";
+
+    private readonly string _ingredientsImageName = "ingredients_en";
+
+    private readonly string _packagingImageName = "packaging_en";
+
+    private readonly string _barcodeSplitPattern = @"^(...)(...)(...)(.*)$";
 
     public FoodService(DatabaseService<FoodItem> databaseService, CacheService cache)
     {
@@ -23,43 +37,94 @@ public class FoodService
         _cache = cache;
     }
 
-    public async Task<FoodItem?> GetFoodItemByIdAsync(string id)
+    public async Task<FoodItem?> GetFoodItemByIdAsync(FoodItemByIdRequest request)
     {
         var findOptions = new FindOptions<FoodItem>
         {
             Projection = Builders<FoodItem>.Projection.Exclude(x => x.Images)
-                .Exclude(x => x.MaxImgId)
-                .Exclude(x => x.Rev)
+                                                      .Exclude(x => x.MaxImgId)
+                                                      .Exclude(x => x.Rev)
         };
-        var filter = Builders<FoodItem>.Filter.Eq(x => x.Id, id);
+        var filter = Builders<FoodItem>.Filter.Eq(x => x.Id, request.ItemId);
 
         return await _dbService.FindOneAsync(filter, findOptions).ConfigureAwait(false);
     }
 
-    public async Task<string> GetFoodItemFrontImgUrlAsync(string id)
+    public async Task<string> GetFoodItemFrontImgUrlAsync(FoodImageRequest request)
     {
-        return string.Empty;
+        var imageFilter = Builders<FoodItem>.Filter.Eq(x => x.Id, request.ItemId);
+        var findOptions = new FindOptions<FoodItem, FoodItemImageProjection>
+        {
+            Projection = Builders<FoodItem>.Projection.Expression(x =>
+                new FoodItemImageProjection
+                {
+                    Id = x.Id,
+                    Images = x.Images ?? new List<Image>(),
+                    Code = x.Code ?? string.Empty,
+                    Rev = x.Rev ?? 0,
+                }
+            )            
+        };
+        var item = await _dbService.FindOneAsync(imageFilter, findOptions).ConfigureAwait(false);
+
+        return BuildImageUrl(item, ImageType.Front);
     }
 
-    public async Task<List<string>> GetAllFoodItemImgUrlsAsync(string id)
+    public async Task<FoodItemAllImgResponse?> GetFoodItemAllImgUrlsAsync(FoodImageRequest request)
     {
-        return [];
+        var response = new FoodItemAllImgResponse();
+
+        var imageFilter = Builders<FoodItem>.Filter.Eq(x => x.Id, request.ItemId);
+        var findOptions = new FindOptions<FoodItem, FoodItemImageProjection>
+        {
+            Projection = Builders<FoodItem>.Projection.Expression(x =>
+                new FoodItemImageProjection
+                {
+                    Id = x.Id,
+                    Images = x.Images ?? new List<Image>(),
+                    Code = x.Code ?? string.Empty,
+                    Rev = x.Rev ?? 0,
+                }
+            )
+        };
+        var item = await _dbService.FindOneAsync(imageFilter, findOptions).ConfigureAwait(false);
+
+        var imageTypes = item.Images.Select(x => x.ImageType);
+        if (imageTypes == null)
+            return null;
+
+        foreach (var type in imageTypes)
+        {
+            var url = BuildImageUrl(item, (ImageType)type!);
+            if (string.IsNullOrEmpty(url))
+                continue;
+
+            var imageDetails = new ImageDetails
+            {
+                Url = url,
+                ImageType = type.ToString()!
+            };
+            response.Images.Add(imageDetails);
+        }
+
+        return response;
     }
     
-    // TODO: Make the cache values user based. Currently all connections to the api are using same cache keys.
-    // Also not working fully:(
-    public async Task<List<FoodItemPreviewResponse>> GetFoodItemPreviewsAsync(string userId, bool prevPage)
+    public async Task<List<FoodItemPreviewsResponse>> GetFoodItemPreviewsAsync(FoodItemPreviewsRequest request)
     {
-        var idsShownValue = await _cache.GetCacheValue($"{_idsShownKey}-{userId}");
+        var userId = request.UserId;
+        var prevPage = request.PrevPage;
+
+        var idsShownValue = await _cache.GetCacheValue($"{_idsShownKey}-{userId}").ConfigureAwait(false);
         List<string> idsShown = [];
         if (!string.IsNullOrEmpty(idsShownValue))
-            idsShown = idsShownValue.Split(',').ToList();
+            idsShown = [.. idsShownValue.Split(',')];
         
-        var findOptions = new FindOptions<FoodItem, FoodItemPreviewResponse>
+        var findOptions = new FindOptions<FoodItem, FoodItemPreviewsResponse>
         {
             Limit = _itemsPerPage,
             Projection = Builders<FoodItem>.Projection.Expression(x =>
-                new FoodItemPreviewResponse
+                new FoodItemPreviewsResponse
                 {
                     Id = x.Id,
                     Name = x.ProductName,
@@ -67,24 +132,25 @@ public class FoodService
                     StoresInStock = x.StoresInStock,
                     Brands = x.Brands,
                     Rating = x.Rating
-                })
+                }
+            )
         };
 
         FilterDefinition<FoodItem> filter;
-        if (idsShown.Count == 0 || (idsShown.Count == 0 && prevPage == true))
+        if (idsShown.Count == 0 || (idsShown.Count == 1 && prevPage))
         {
             filter = Builders<FoodItem>.Filter.Empty;
         }
         else if (prevPage == true)
         {
-            if (idsShown.Count < 2)
+            if (idsShown.Count < 3)
             {
-                idsShown.Clear();
+                idsShown.RemoveAt(1);
                 filter = Builders<FoodItem>.Filter.Empty;
             }
             else
             {
-                var prevLastIdShown = idsShown[^2];
+                var prevLastIdShown = idsShown[^3];
                 idsShown.RemoveAt(idsShown.Count - 1);
                 filter = Builders<FoodItem>.Filter.Gt(x => x.Id, prevLastIdShown);
             }
@@ -94,15 +160,47 @@ public class FoodService
             filter = Builders<FoodItem>.Filter.Gt(x => x.Id, idsShown.Last());
         }
 
-        var foodItems = await _dbService.FindAsync(filter, findOptions);
+        var foodItems = await _dbService.FindAsync(filter, findOptions).ConfigureAwait(false);
         if (foodItems.Count == 0)
             return [];
         
         if (!prevPage)
             idsShown.Add(foodItems.Last().Id!);
         
-        await _cache.SetCacheValue($"{_idsShownKey}-{userId}", string.Join(',', idsShown));
+        await _cache.SetCacheValue($"{_idsShownKey}-{userId}", string.Join(',', idsShown)).ConfigureAwait(false);
 
         return foodItems;
+    }
+
+    private string BuildImageUrl(FoodItemImageProjection item, ImageType type)
+    {
+        var rev = item.Images.Where(x => x.ImageType == type).FirstOrDefault()?.Rev;
+        if (rev == null)
+            return string.Empty;
+
+        var barcode = item.Code.PadLeft(13, '0');
+        var splitMatch = Regex.Match(barcode, _barcodeSplitPattern);
+
+        string imageName = string.Empty;
+        switch (type) 
+        {
+            case ImageType.Front:
+                imageName = _frontImageName;
+                break;
+            case ImageType.Nutrition:
+                imageName = _nutritionImageName;
+                break;
+            case ImageType.Ingredients:
+                imageName = _ingredientsImageName;
+                break;
+            case ImageType.Packaging:
+                imageName = _packagingImageName;
+                break;
+        }
+
+        var folderName = $"{splitMatch.Groups[1].Value}/{splitMatch.Groups[2].Value}/{splitMatch.Groups[3].Value}/{splitMatch.Groups[4].Value}";
+        var fileName = $"{imageName}.{rev}.400.jpg";
+
+        return $"{_imageBaseUrl}/{folderName}/{fileName}";
     }
 }

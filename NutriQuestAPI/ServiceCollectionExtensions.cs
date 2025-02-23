@@ -1,7 +1,7 @@
-﻿using CacheServices;
+﻿using AuthenticationServices;
+using CacheServices;
 using DatabaseServices;
 using GeolocationServices;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using NutriQuestServices;
 using StackExchange.Redis;

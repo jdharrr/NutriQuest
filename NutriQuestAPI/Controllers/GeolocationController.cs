@@ -14,7 +14,7 @@ public class GeolocationController : ControllerBase
         _locationService = locationService;
     }
 
-    [HttpGet("{zipCode:int}")]
+    [HttpGet("storesByZipCode/{zipCode:int}")]
     public async Task<IActionResult> GetNearbyStoresByZipCodeAsync(int zipCode)
     {
         var stores = await _locationService.GetValidStoresForLocationAsync(zipCode).ConfigureAwait(false);

@@ -1,6 +1,6 @@
 namespace NutriQuestServices.FoodResponses;
 
-public class FoodItemPreviewResponse
+public class FoodItemPreviewsResponse
 {
     public string? Id { get; set; }
     

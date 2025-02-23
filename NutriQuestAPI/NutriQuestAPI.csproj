@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AuthenticationServices\AuthenticationServices.csproj" />
     <ProjectReference Include="..\GeolocationServices\GeolocationServices.csproj" />
     <ProjectReference Include="..\NutriQuestServices\NutriQuestServices.csproj" />
   </ItemGroup>

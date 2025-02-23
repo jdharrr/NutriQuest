@@ -1,6 +1,7 @@
 ﻿using DatabaseServices.Models;
 using Microsoft.AspNetCore.Mvc;
 using NutriQuestServices;
+using NutriQuestServices.FoodRequests;
 
 namespace NutriQuestAPI.Controllers;
 
@@ -15,22 +16,51 @@ public class FoodItemsController : ControllerBase
         _foodService = foodService;
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetFoodItemByIdAsync(string id)
+    [HttpGet("itemById")]
+    public async Task<IActionResult> GetFoodItemByIdAsync([FromQuery] FoodItemByIdRequest request)
     {
-        if (!MongoDB.Bson.ObjectId.TryParse(id, out var _))
+        if (!MongoDB.Bson.ObjectId.TryParse(request.ItemId, out var _))
             return BadRequest("Invalid Parameter");
 
-        FoodItem? item = await _foodService.GetFoodItemByIdAsync(id).ConfigureAwait(false);
+        FoodItem? item = await _foodService.GetFoodItemByIdAsync(request).ConfigureAwait(false);
         if (item == null)
             return NotFound();
 
         return Ok(item);
     }
 
-    [HttpGet("{userId}/{prevPage:bool}")]
-    public async Task<IActionResult> GetFoodItemPreviewsAsync(string userId, bool prevPage = false)
+    [HttpGet("itemPreviews")]
+    public async Task<IActionResult> GetFoodItemPreviewsAsync([FromQuery] FoodItemPreviewsRequest request)
     {
-        return Ok(await _foodService.GetFoodItemPreviewsAsync(userId, prevPage));
+        if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
+            return BadRequest("Invalid Parameter");
+
+        return Ok(await _foodService.GetFoodItemPreviewsAsync(request).ConfigureAwait(false));
+    }
+
+    [HttpGet("itemFrontImage")]
+    public async Task<IActionResult> GetFoodItemFrontImageAsync([FromQuery] FoodImageRequest request)
+    {
+        if (!MongoDB.Bson.ObjectId.TryParse(request.ItemId, out var _))
+            return BadRequest("Invalid Parameter");
+
+        var url = await _foodService.GetFoodItemFrontImgUrlAsync(request).ConfigureAwait(false);
+        if (string.IsNullOrEmpty(url))
+            return NotFound();
+
+        return Ok(url);
+    }
+
+    [HttpGet("itemAllImages")]
+    public async Task<IActionResult> GetFoodItemAllImagesAsync([FromQuery] FoodImageRequest request)
+    {
+        if (!MongoDB.Bson.ObjectId.TryParse(request.ItemId, out var _))
+            return BadRequest("Invalid Parameter");
+
+        var images = await _foodService.GetFoodItemAllImgUrlsAsync(request).ConfigureAwait(false);
+        if (images == null)
+            return NotFound();
+
+        return Ok(images);
     }
 }
