@@ -1,10 +1,15 @@
-﻿using DatabaseServices.Models;
+﻿using AuthenticationServices;
+using DatabaseServices.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NutriQuestServices;
-using NutriQuestServices.FoodRequests;
+using Microsoft.Extensions.Options;
+using NutriQuestServices.FoodService;
+using NutriQuestServices.FoodService.FoodRequests;
 
 namespace NutriQuestAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("nutriQuestApi/foodItems")]
 public class FoodItemsController : ControllerBase

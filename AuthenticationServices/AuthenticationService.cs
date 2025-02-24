@@ -10,10 +10,13 @@ namespace AuthenticationServices;
 public class AuthenticationService
 {
     private readonly DatabaseService<User> _dbService;
+
+    private readonly TokenService _tokenService;
     
-    public AuthenticationService(DatabaseService<User> dbService)
+    public AuthenticationService(DatabaseService<User> dbService, TokenService tokenService)
     {
         _dbService = dbService;
+        _tokenService = tokenService;
     }
 
     public async Task<bool> CreateNewUserAsync(NewUserRequest request)
@@ -49,7 +52,7 @@ public class AuthenticationService
         if (!IsValidPassword(request.Password, user.Password!, user.Salt!))
             return null;
 
-        return user.Id;
+        return _tokenService.GenerateToken(user.Id);
     }
 
     private static string HashPassword(string password, byte[] salt)

@@ -1,6 +1,7 @@
 ﻿using AuthenticationServices;
 using AuthenticationServices.Requests;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 
 namespace NutriQuestAPI.Controllers;
@@ -33,10 +34,10 @@ public class AuthenticationController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
     {
-        var userId = await _authService.LoginAsync(request).ConfigureAwait(false);
-        if (string.IsNullOrEmpty(userId))
+        var token = await _authService.LoginAsync(request).ConfigureAwait(false);
+        if (string.IsNullOrEmpty(token))
             return BadRequest("Email or password are inccorect.");
 
-        return Ok(userId);
+        return Ok(token);
     }
 }

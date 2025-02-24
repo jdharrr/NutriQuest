@@ -1,6 +1,6 @@
 ﻿using DatabaseServices.Models;
 
-namespace NutriQuestServices.ProjectionModels;
+namespace NutriQuestServices.FoodService.FoodItemProjections;
 
 public class FoodItemImageProjection
 {

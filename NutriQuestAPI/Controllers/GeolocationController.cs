@@ -1,8 +1,12 @@
 using GeolocationServices;
+using GeolocationServices.Requests;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace NutriQuestAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("nutriQuestApi/geolocation")]
 public class GeolocationController : ControllerBase
@@ -14,10 +18,10 @@ public class GeolocationController : ControllerBase
         _locationService = locationService;
     }
 
-    [HttpGet("storesByZipCode/{zipCode:int}")]
-    public async Task<IActionResult> GetNearbyStoresByZipCodeAsync(int zipCode)
+    [HttpGet("storesByZipCode")]
+    public async Task<IActionResult> GetNearbyStoresByZipCodeAsync([FromQuery] StoresByZipCodeRequest request)
     {
-        var stores = await _locationService.GetValidStoresForLocationAsync(zipCode).ConfigureAwait(false);
+        var stores = await _locationService.GetValidStoresForLocationAsync(request).ConfigureAwait(false);
         if (stores.Count == 0)
             return NotFound();
 

@@ -2,19 +2,19 @@
 using DatabaseServices;
 using DatabaseServices.Models;
 using MongoDB.Driver;
-using NutriQuestServices.FoodRequests;
-using NutriQuestServices.FoodResponses;
-using NutriQuestServices.ProjectionModels;
+using NutriQuestServices.FoodService.FoodItemProjections;
+using NutriQuestServices.FoodService.FoodRequests;
+using NutriQuestServices.FoodService.FoodResponses;
 using System.Text.RegularExpressions;
 
-namespace NutriQuestServices;
+namespace NutriQuestServices.FoodService;
 
 public class FoodService
 {
     private readonly DatabaseService<FoodItem> _dbService;
-    
+
     private readonly CacheService _cache;
-    
+
     private readonly string _idsShownKey = "idsShown";
 
     private readonly int _itemsPerPage = 9;
@@ -63,7 +63,7 @@ public class FoodService
                     Code = x.Code ?? string.Empty,
                     Rev = x.Rev ?? 0,
                 }
-            )            
+            )
         };
         var item = await _dbService.FindOneAsync(imageFilter, findOptions).ConfigureAwait(false);
 
@@ -109,7 +109,7 @@ public class FoodService
 
         return response;
     }
-    
+
     public async Task<List<FoodItemPreviewsResponse>> GetFoodItemPreviewsAsync(FoodItemPreviewsRequest request)
     {
         var userId = request.UserId;
@@ -119,7 +119,7 @@ public class FoodService
         List<string> idsShown = [];
         if (!string.IsNullOrEmpty(idsShownValue))
             idsShown = [.. idsShownValue.Split(',')];
-        
+
         var findOptions = new FindOptions<FoodItem, FoodItemPreviewsResponse>
         {
             Limit = _itemsPerPage,
@@ -137,7 +137,7 @@ public class FoodService
         };
 
         FilterDefinition<FoodItem> filter;
-        if (idsShown.Count == 0 || (idsShown.Count == 1 && prevPage))
+        if (idsShown.Count == 0 || idsShown.Count == 1 && prevPage)
         {
             filter = Builders<FoodItem>.Filter.Empty;
         }
@@ -163,10 +163,10 @@ public class FoodService
         var foodItems = await _dbService.FindAsync(filter, findOptions).ConfigureAwait(false);
         if (foodItems.Count == 0)
             return [];
-        
+
         if (!prevPage)
             idsShown.Add(foodItems.Last().Id!);
-        
+
         await _cache.SetCacheValue($"{_idsShownKey}-{userId}", string.Join(',', idsShown)).ConfigureAwait(false);
 
         return foodItems;
@@ -182,7 +182,7 @@ public class FoodService
         var splitMatch = Regex.Match(barcode, _barcodeSplitPattern);
 
         string imageName = string.Empty;
-        switch (type) 
+        switch (type)
         {
             case ImageType.Front:
                 imageName = _frontImageName;

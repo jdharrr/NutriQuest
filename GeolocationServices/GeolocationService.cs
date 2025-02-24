@@ -1,5 +1,5 @@
 using DatabaseServices.Models;
-using GeolocationServices.Responses;
+using GeolocationServices.Requests;
 using NutriQuestServices;
 
 namespace GeolocationServices;
@@ -15,9 +15,9 @@ public class GeolocationService
         _storeService = storeService;
     }
 
-    public async Task<List<Store>> GetValidStoresForLocationAsync(int zipCode)
+    public async Task<List<Store>> GetValidStoresForLocationAsync(StoresByZipCodeRequest request)
     {
-        var foundStores = await _googleApi.GetNearbyStoresAsync(zipCode).ConfigureAwait(false);
+        var foundStores = await _googleApi.GetNearbyStoresAsync(request.ZipCode).ConfigureAwait(false);
         if (foundStores.Count == 0)
             return [];
 
