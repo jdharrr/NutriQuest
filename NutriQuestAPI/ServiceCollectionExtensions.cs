@@ -4,18 +4,31 @@ using DatabaseServices;
 using GeolocationServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using NutriQuestServices;
 using NutriQuestServices.FoodService;
 using StackExchange.Redis;
+using Azure.Identity;
 
 namespace NutriQuestAPI;
 
 public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection ConfigureKeyVault(this IServiceCollection services, IConfiguration configuration)
+    {
+        var vaultUrl = configuration["KeyVault:Url"];
+        var credential = new DefaultAzureCredential();
+        var keyVaultConfig = new ConfigurationBuilder().AddConfiguration(configuration)
+                                                       .AddAzureKeyVault(new Uri(vaultUrl!), credential)
+                                                       .Build();
+
+        services.AddSingleton<IConfiguration>(keyVaultConfig);
+
+        return services;
+    }
+
     public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<MongoSettings>(configuration.GetSection("DatabaseSettings"));
+        services.AddSingleton<IConfigureOptions<MongoSettings>, MongoSettingsConfiguration>();
         services.AddSingleton<MongoService>();
         services.AddScoped(typeof(DatabaseService<>));
 
@@ -33,7 +46,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection ConfigureGoogleApi(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<GoogleApiSettings>(configuration.GetSection("Apis"));
+        services.AddSingleton<IConfigureOptions<GoogleApiSettings>, GoogleApiSettingsConfiguration>();
         services.AddHttpClient<GoogleApi>();
         services.AddScoped<GoogleApi>();
         
@@ -42,7 +55,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection ConfigureRedis(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<RedisSettings>(configuration.GetSection("Redis"));
+        services.AddSingleton<IConfigureOptions<RedisSettings>, RedisSettingsConfiguration>();
         services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
             var settings = sp.GetRequiredService<IOptions<RedisSettings>>().Value;
@@ -58,7 +71,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+        services.AddSingleton<IConfigureOptions<JwtSettings>, JwtSettingsConfiguration>();
         services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerSettings>();
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
         services.AddScoped<TokenService>();

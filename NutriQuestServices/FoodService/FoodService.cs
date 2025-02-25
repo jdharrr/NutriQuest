@@ -5,6 +5,7 @@ using MongoDB.Driver;
 using NutriQuestServices.FoodService.FoodItemProjections;
 using NutriQuestServices.FoodService.FoodRequests;
 using NutriQuestServices.FoodService.FoodResponses;
+using NutriQuestServices.FoodService.Responses;
 using System.Text.RegularExpressions;
 
 namespace NutriQuestServices.FoodService;
@@ -37,8 +38,10 @@ public class FoodService
         _cache = cache;
     }
 
-    public async Task<FoodItem?> GetFoodItemByIdAsync(FoodItemByIdRequest request)
+    public async Task<FoodItemByIdResponse> GetFoodItemByIdAsync(FoodItemByIdRequest request)
     {
+        var response = new FoodItemByIdResponse();
+
         var findOptions = new FindOptions<FoodItem>
         {
             Projection = Builders<FoodItem>.Projection.Exclude(x => x.Images)
@@ -47,11 +50,15 @@ public class FoodService
         };
         var filter = Builders<FoodItem>.Filter.Eq(x => x.Id, request.ItemId);
 
-        return await _dbService.FindOneAsync(filter, findOptions).ConfigureAwait(false);
+        response.FoodItem = await _dbService.FindOneAsync(filter, findOptions).ConfigureAwait(false);
+
+        return response;
     }
 
-    public async Task<string> GetFoodItemFrontImgUrlAsync(FoodImageRequest request)
+    public async Task<FoodItemFrontImgResponse> GetFoodItemFrontImgUrlAsync(FoodImageRequest request)
     {
+        var response = new FoodItemFrontImgResponse();
+
         var imageFilter = Builders<FoodItem>.Filter.Eq(x => x.Id, request.ItemId);
         var findOptions = new FindOptions<FoodItem, FoodItemImageProjection>
         {
@@ -66,8 +73,12 @@ public class FoodService
             )
         };
         var item = await _dbService.FindOneAsync(imageFilter, findOptions).ConfigureAwait(false);
+        if (item == null)
+            return response;
 
-        return BuildImageUrl(item, ImageType.Front);
+        response.Url = BuildImageUrl(item, ImageType.Front);
+
+        return response;
     }
 
     public async Task<FoodItemAllImgResponse?> GetFoodItemAllImgUrlsAsync(FoodImageRequest request)
@@ -88,6 +99,8 @@ public class FoodService
             )
         };
         var item = await _dbService.FindOneAsync(imageFilter, findOptions).ConfigureAwait(false);
+        if (item == null)
+            return null;
 
         var imageTypes = item.Images.Select(x => x.ImageType);
         if (imageTypes == null)

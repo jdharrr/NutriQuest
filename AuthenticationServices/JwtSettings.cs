@@ -1,4 +1,7 @@
-﻿namespace AuthenticationServices;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+
+namespace AuthenticationServices;
 
 public class JwtSettings
 {

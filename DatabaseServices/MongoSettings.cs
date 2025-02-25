@@ -1,5 +1,4 @@
-﻿using System;
-namespace DatabaseServices;
+﻿namespace DatabaseServices;
 
 public class MongoSettings
 {

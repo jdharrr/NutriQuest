@@ -6,6 +6,7 @@ using NutriQuestAPI;
 var builder = WebApplication.CreateBuilder(args);
 
 // Dependency Injections
+builder.Services.ConfigureKeyVault(builder.Configuration);
 builder.Services.ConfigureDatabase(builder.Configuration);
 builder.Services.ConfigureRedis(builder.Configuration);
 builder.Services.ConfigureGoogleApi(builder.Configuration);

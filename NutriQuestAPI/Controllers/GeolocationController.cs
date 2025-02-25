@@ -21,10 +21,10 @@ public class GeolocationController : ControllerBase
     [HttpGet("storesByZipCode")]
     public async Task<IActionResult> GetNearbyStoresByZipCodeAsync([FromQuery] StoresByZipCodeRequest request)
     {
-        var stores = await _locationService.GetValidStoresForLocationAsync(request).ConfigureAwait(false);
-        if (stores.Count == 0)
+        var response = await _locationService.GetValidStoresForLocationAsync(request).ConfigureAwait(false);
+        if (response.Stores.Count == 0)
             return NotFound();
 
-        return Ok(stores);
+        return Ok(response);
     }
 }

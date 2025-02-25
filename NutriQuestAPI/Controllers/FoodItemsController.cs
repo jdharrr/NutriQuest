@@ -9,7 +9,6 @@ using NutriQuestServices.FoodService.FoodRequests;
 
 namespace NutriQuestAPI.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("nutriQuestApi/foodItems")]
 public class FoodItemsController : ControllerBase
@@ -27,11 +26,11 @@ public class FoodItemsController : ControllerBase
         if (!MongoDB.Bson.ObjectId.TryParse(request.ItemId, out var _))
             return BadRequest("Invalid Parameter");
 
-        FoodItem? item = await _foodService.GetFoodItemByIdAsync(request).ConfigureAwait(false);
-        if (item == null)
-            return NotFound();
+        var response = await _foodService.GetFoodItemByIdAsync(request).ConfigureAwait(false);
+        if (response.FoodItem == null)
+            return NotFound("Item not found");
 
-        return Ok(item);
+        return Ok(response);
     }
 
     [HttpGet("itemPreviews")]
@@ -49,11 +48,11 @@ public class FoodItemsController : ControllerBase
         if (!MongoDB.Bson.ObjectId.TryParse(request.ItemId, out var _))
             return BadRequest("Invalid Parameter");
 
-        var url = await _foodService.GetFoodItemFrontImgUrlAsync(request).ConfigureAwait(false);
-        if (string.IsNullOrEmpty(url))
+        var response = await _foodService.GetFoodItemFrontImgUrlAsync(request).ConfigureAwait(false);
+        if (string.IsNullOrEmpty(response.Url))
             return NotFound();
 
-        return Ok(url);
+        return Ok(response);
     }
 
     [HttpGet("itemAllImages")]
@@ -63,7 +62,7 @@ public class FoodItemsController : ControllerBase
             return BadRequest("Invalid Parameter");
 
         var images = await _foodService.GetFoodItemAllImgUrlsAsync(request).ConfigureAwait(false);
-        if (images == null)
+        if (images == null || images.Images.Count == 0)
             return NotFound();
 
         return Ok(images);
