@@ -125,10 +125,10 @@ public class FoodService
 
     public async Task<List<FoodItemPreviewsResponse>> GetFoodItemPreviewsAsync(FoodItemPreviewsRequest request)
     {
-        var userId = request.UserId;
+        var sessionId = request.SessionId;
         var prevPage = request.PrevPage;
 
-        var idsShownValue = await _cache.GetCacheValue($"{_idsShownKey}-{userId}").ConfigureAwait(false);
+        var idsShownValue = await _cache.GetCacheValue($"{_idsShownKey}-{sessionId}").ConfigureAwait(false);
         List<string> idsShown = [];
         if (!string.IsNullOrEmpty(idsShownValue))
             idsShown = [.. idsShownValue.Split(',')];
@@ -180,7 +180,7 @@ public class FoodService
         if (!prevPage)
             idsShown.Add(foodItems.Last().Id!);
 
-        await _cache.SetCacheValue($"{_idsShownKey}-{userId}", string.Join(',', idsShown)).ConfigureAwait(false);
+        await _cache.SetCacheValue($"{_idsShownKey}-{sessionId}", string.Join(',', idsShown), 45).ConfigureAwait(false);
 
         return foodItems;
     }

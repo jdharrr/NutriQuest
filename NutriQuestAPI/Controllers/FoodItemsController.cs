@@ -1,9 +1,4 @@
-﻿using AuthenticationServices;
-using DatabaseServices.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Mvc;
 using NutriQuestServices.FoodService;
 using NutriQuestServices.FoodService.FoodRequests;
 
@@ -36,9 +31,6 @@ public class FoodItemsController : ControllerBase
     [HttpGet("itemPreviews")]
     public async Task<IActionResult> GetFoodItemPreviewsAsync([FromQuery] FoodItemPreviewsRequest request)
     {
-        if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
-            return BadRequest("Invalid Parameter");
-
         return Ok(await _foodService.GetFoodItemPreviewsAsync(request).ConfigureAwait(false));
     }
 
