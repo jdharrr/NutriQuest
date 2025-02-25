@@ -16,7 +16,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection ConfigureKeyVault(this IServiceCollection services, IConfiguration configuration)
     {
         var vaultUrl = configuration["KeyVault:Url"];
-        var credential = new DefaultAzureCredential();
+        var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+        {
+            // Needed for Rider as it does not register Azure login into DefaultAzureCredential
+            ExcludeInteractiveBrowserCredential = false  
+        });
         var keyVaultConfig = new ConfigurationBuilder().AddConfiguration(configuration)
                                                        .AddAzureKeyVault(new Uri(vaultUrl!), credential)
                                                        .Build();
