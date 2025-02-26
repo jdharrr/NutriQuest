@@ -8,6 +8,7 @@ using NutriQuestServices;
 using NutriQuestServices.FoodService;
 using StackExchange.Redis;
 using Azure.Identity;
+using EmailServices;
 
 namespace NutriQuestAPI;
 
@@ -80,6 +81,14 @@ public static class ServiceCollectionExtensions
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
         services.AddScoped<TokenService>();
         services.AddScoped<AuthenticationService>();
+
+        return services;
+    }
+
+    public static IServiceCollection ConfigureEmail(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton<IConfigureOptions<EmailSettings>, EmailSettingsConfiguration>();
+        services.AddScoped<EmailService>();
 
         return services;
     }

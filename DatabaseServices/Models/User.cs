@@ -16,4 +16,8 @@ public class User: BaseModel, IMongoDocument
     public List<string> Favorites { get; set; } = [];
 
     public List<string> Cart { get; set; } = [];
+
+    public string? PasswordResetToken { get; set; }
+
+    public DateTime? PasswordResetExpiration { get; set; }
 }

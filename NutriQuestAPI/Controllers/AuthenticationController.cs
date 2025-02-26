@@ -1,5 +1,6 @@
 ﻿using AuthenticationServices;
 using AuthenticationServices.Requests;
+using EmailServices.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
@@ -12,6 +13,8 @@ public class AuthenticationController : ControllerBase
 {
     private readonly AuthenticationService _authService;
 
+    private readonly string _emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+
     public AuthenticationController(AuthenticationService authService)
     {
         _authService = authService;
@@ -20,8 +23,7 @@ public class AuthenticationController : ControllerBase
     [HttpPost("createNewUser")]
     public async Task<IActionResult> CreateNewUser([FromBody] NewUserRequest request)
     {
-        string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
-        if (!Regex.IsMatch(request.Email, emailPattern, RegexOptions.IgnoreCase))
+        if (!Regex.IsMatch(request.Email, _emailPattern, RegexOptions.IgnoreCase))
             return BadRequest("Incorrect email format.");
 
         var userCreated = await _authService.CreateNewUserAsync(request).ConfigureAwait(false);
@@ -48,7 +50,7 @@ public class AuthenticationController : ControllerBase
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
             return BadRequest("Invalid Parameter");
 
-        var response = await _authService.ChangePasswordAsync(request);
+        var response = await _authService.ChangePasswordAsync(request).ConfigureAwait(false);
         if (response == null)
             return NotFound("User not found");
 
@@ -56,5 +58,31 @@ public class AuthenticationController : ControllerBase
             return Unauthorized("Incorrect current password");
 
         return Ok(response);
+    }
+
+    [HttpPost("forgotPassword")]
+    public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request)
+    {
+        if (!Regex.IsMatch(request.Email, _emailPattern, RegexOptions.IgnoreCase))
+            return BadRequest("Incorrect email format.");
+
+        var emailSent = await _authService.ForgotPasswordAsync(request).ConfigureAwait(false);
+        if (emailSent == null)
+            return NotFound("Email not found");
+
+        return Ok(emailSent);
+    }
+
+    [HttpPost("resetPassword")]
+    public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
+    {
+        var resetResponse = await _authService.ResetPasswordAsync(request).ConfigureAwait(false);
+        if (resetResponse == null)
+            return NotFound("Email not found");
+
+        if (resetResponse.ResetSuccess == null)
+            return Unauthorized("Invalid Token");
+
+        return Ok(resetResponse);
     }
 }

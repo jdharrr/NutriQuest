@@ -11,5 +11,7 @@ public class JwtSettings
 
     public required string Audience { get; set; }
 
-    public required string ExpiryMinutes { get; set; }
+    public required string AccessExpiryMinutes { get; set; }
+
+    public required string PasswordResetExpiryMinutes { get; set; }
 }
