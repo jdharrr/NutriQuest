@@ -40,7 +40,8 @@ public class AuthenticationService
 
         var user = new User
         {
-            Email = request.Email
+            Email = request.Email,
+            Name = request.Name
         };
         
         var salt = new byte[16];
