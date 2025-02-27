@@ -46,10 +46,10 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalHost",
+    options.AddPolicy("AllowNutriQuestApp",
         policy =>
         {
-            policy.WithOrigins("http://127.0.0.1:5500")
+            policy.WithOrigins("https://proud-grass-047c1c410.6.azurestaticapps.net", "http://127.0.0.1:5500")
                   .AllowAnyMethod()
                   .AllowAnyHeader();
         });
@@ -64,7 +64,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowLocalHost");
+app.UseCors("AllowNutriQuestApp");
 
 app.UseHttpsRedirection();
 
