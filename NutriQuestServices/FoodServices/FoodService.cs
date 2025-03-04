@@ -2,9 +2,9 @@
 using DatabaseServices;
 using DatabaseServices.Models;
 using MongoDB.Driver;
-using NutriQuestServices.FoodServices.FoodItemProjections;
-using NutriQuestServices.FoodServices.FoodRequests;
-using NutriQuestServices.FoodServices.FoodResponses;
+using NutriQuestServices.FoodServices.Projections;
+using NutriQuestServices.FoodServices.Requests;
+using NutriQuestServices.FoodServices.Responses;
 using NutriQuestServices.FoodServices.Responses;
 using System.Text.RegularExpressions;
 

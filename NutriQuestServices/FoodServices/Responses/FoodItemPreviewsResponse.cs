@@ -1,4 +1,4 @@
-namespace NutriQuestServices.FoodServices.FoodResponses;
+namespace NutriQuestServices.FoodServices.Responses;
 
 public class FoodItemPreviewsResponse
 {

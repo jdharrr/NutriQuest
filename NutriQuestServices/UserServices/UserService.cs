@@ -2,7 +2,7 @@ using DatabaseServices;
 using DatabaseServices.Models;
 using MongoDB.Driver;
 using NutriQuestServices.FoodServices;
-using NutriQuestServices.FoodServices.FoodResponses;
+using NutriQuestServices.FoodServices.Responses;
 using NutriQuestServices.UserServices.Requests;
 using NutriQuestServices.UserServices.Responses;
 

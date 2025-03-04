@@ -1,4 +1,4 @@
-﻿namespace NutriQuestServices.FoodServices.FoodRequests;
+﻿namespace NutriQuestServices.FoodServices.Requests;
 
 public class FoodImageRequest
 {
