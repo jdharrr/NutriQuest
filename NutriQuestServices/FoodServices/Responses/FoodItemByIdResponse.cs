@@ -1,6 +1,6 @@
 ﻿using DatabaseServices.Models;
 
-namespace NutriQuestServices.FoodService.Responses;
+namespace NutriQuestServices.FoodServices.Responses;
 
 public class FoodItemByIdResponse
 {

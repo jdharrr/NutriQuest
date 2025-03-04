@@ -2,13 +2,13 @@
 using DatabaseServices;
 using DatabaseServices.Models;
 using MongoDB.Driver;
-using NutriQuestServices.FoodService.FoodItemProjections;
-using NutriQuestServices.FoodService.FoodRequests;
-using NutriQuestServices.FoodService.FoodResponses;
-using NutriQuestServices.FoodService.Responses;
+using NutriQuestServices.FoodServices.FoodItemProjections;
+using NutriQuestServices.FoodServices.FoodRequests;
+using NutriQuestServices.FoodServices.FoodResponses;
+using NutriQuestServices.FoodServices.Responses;
 using System.Text.RegularExpressions;
 
-namespace NutriQuestServices.FoodService;
+namespace NutriQuestServices.FoodServices;
 
 public class FoodService
 {
@@ -37,6 +37,10 @@ public class FoodService
         _dbService = databaseService;
         _cache = cache;
     }
+
+    // **********************
+    // Used by the controller
+    // **********************
 
     public async Task<FoodItemByIdResponse> GetFoodItemByIdAsync(FoodItemByIdRequest request)
     {
@@ -215,5 +219,37 @@ public class FoodService
         var fileName = $"{imageName}.{rev}.400.jpg";
 
         return $"{_imageBaseUrl}/{folderName}/{fileName}";
+    }
+
+    // TODO: Add AddRatingToItem()
+    // TODO: Add GetRatingInfo()
+
+    // **********************
+    // User by other services
+    // **********************
+
+    public async Task<List<FoodItemPreviewsResponse>> GetFoodItemPreviewsByIdsAsync(List<string> ids)
+    {
+        if (ids.Count < 1)
+            return [];
+
+        var findFilter = Builders<FoodItem>.Filter.In(x => x.Id, ids);
+        var findOptions = new FindOptions<FoodItem, FoodItemPreviewsResponse>
+        {
+            Limit = _itemsPerPage,
+            Projection = Builders<FoodItem>.Projection.Expression(x =>
+                new FoodItemPreviewsResponse
+                {
+                    Id = x.Id,
+                    Name = x.ProductName,
+                    Price = x.Price,
+                    StoresInStock = x.StoresInStock,
+                    Brands = x.Brands,
+                    Rating = x.Rating
+                }
+           )
+        };
+
+        return await _dbService.FindAsync(findFilter, findOptions).ConfigureAwait(false);
     }
 }

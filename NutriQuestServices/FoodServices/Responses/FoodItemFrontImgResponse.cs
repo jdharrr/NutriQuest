@@ -1,4 +1,4 @@
-﻿namespace NutriQuestServices.FoodService.Responses;
+﻿namespace NutriQuestServices.FoodServices.Responses;
 
 public class FoodItemFrontImgResponse
 {

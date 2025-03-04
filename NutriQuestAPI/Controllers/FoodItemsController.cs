@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using NutriQuestServices.FoodService;
-using NutriQuestServices.FoodService.FoodRequests;
+using NutriQuestServices.FoodServices;
+using NutriQuestServices.FoodServices.FoodRequests;
 
 namespace NutriQuestAPI.Controllers;
 

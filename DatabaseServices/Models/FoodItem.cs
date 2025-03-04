@@ -51,5 +51,7 @@ public class FoodItem : BaseModel, IMongoDocument
     
     public string? Rating { get; set; } = string.Empty;
 
+    public int NumberOfRatings { get; set; } = 0;
+
     public List<string>? StoresInStock { get; set; } = [];
 }

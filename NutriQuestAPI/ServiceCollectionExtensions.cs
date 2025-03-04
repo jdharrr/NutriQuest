@@ -5,10 +5,11 @@ using GeolocationServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using NutriQuestServices;
-using NutriQuestServices.FoodService;
+using NutriQuestServices.FoodServices;
 using StackExchange.Redis;
 using Azure.Identity;
 using EmailServices;
+using NutriQuestServices.UserServices;
 
 namespace NutriQuestAPI;
 
@@ -45,6 +46,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<FoodService>();
         services.AddScoped<StoreService>();
         services.AddScoped<GeolocationService>();
+        services.AddScoped<UserService>();
 
         return services;
     }

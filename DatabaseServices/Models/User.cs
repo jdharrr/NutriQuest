@@ -22,4 +22,8 @@ public class User: BaseModel, IMongoDocument
     public string? PasswordResetToken { get; set; }
 
     public DateTime? PasswordResetExpiration { get; set; }
+
+    public int NumberInFavorites { get; set; } = 0;
+
+    public int NumberInCart { get; set; } = 0;
 }
