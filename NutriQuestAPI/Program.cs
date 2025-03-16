@@ -49,9 +49,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowNutriQuestApp",
         policy =>
         {
-            policy.WithOrigins("https://proud-grass-047c1c410.6.azurestaticapps.net", "http://127.0.0.1:5500")
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
+            policy.WithOrigins("https://proud-grass-047c1c410.6.azurestaticapps.net", "http://127.0.0.1:5500",
+                    "http://127.0.0.1:5115")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
         });
 });
 
@@ -68,6 +70,7 @@ app.UseCors("AllowNutriQuestApp");
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
