@@ -28,8 +28,8 @@ public class FoodItemsController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("itemPreviews")]
-    public async Task<IActionResult> GetFoodItemPreviewsAsync([FromQuery] FoodItemPreviewsRequest request)
+    [HttpPost("itemPreviews")]
+    public async Task<IActionResult> GetFoodItemPreviewsAsync([FromBody] FoodItemPreviewsRequest request)
     {
         return Ok(await _foodService.GetFoodItemPreviewsAsync(request).ConfigureAwait(false));
     }
@@ -58,5 +58,21 @@ public class FoodItemsController : ControllerBase
             return NotFound();
 
         return Ok(images);
+    }
+
+    [HttpGet("mainFoodCategories")]
+    public IActionResult GetMainFoodCategories()
+    {
+        var response = _foodService.GetMainFoodCategories();
+
+        return Ok(response);
+    }
+
+    [HttpGet("subFoodCategories")]
+    public IActionResult GetMainFoodCategories([FromQuery] SubCategoriesRequest request)
+    {
+        var response = _foodService.GetSubCategoriesForCategory(request);
+
+        return Ok(response);
     }
 }

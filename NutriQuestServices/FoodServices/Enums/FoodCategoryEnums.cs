@@ -15,7 +15,7 @@ public enum MainFoodCategories
     Grains
 }
 
-public enum BeverageSubCategories
+public enum Beverages
 {
     All,
     SweetenedBeverages,
@@ -28,7 +28,7 @@ public enum BeverageSubCategories
     EnergyDrink
 }
 
-public enum SnacksAndAppetizersSubCategories
+public enum SnacksAndAppetizers
 {
     All,
     Crackers,
@@ -39,7 +39,7 @@ public enum SnacksAndAppetizersSubCategories
     Dips
 }
 
-public enum BreakfastSubCategories
+public enum Breakfast
 {
     All,
     Cereals,
@@ -51,7 +51,7 @@ public enum BreakfastSubCategories
     Spreads
 }
 
-public enum BakeryAndDessertsSubCategories
+public enum BakeryAndDesserts
 {
     All,
     IceCream,
@@ -65,7 +65,7 @@ public enum BakeryAndDessertsSubCategories
     Breads
 }
 
-public enum GrainSubCategories
+public enum Grains
 {
     All,
     Pasta,
@@ -90,92 +90,101 @@ public static class FoodEnumHelper
         { MainFoodCategories.Grains, ".*(grain).*" },
     };
 
-    private static readonly Dictionary<BeverageSubCategories, string> _beverageSubCategories = new()
+    private static readonly Dictionary<Beverages, string> _beverageSubCategories = new()
     {
-        { BeverageSubCategories.All, "" },
-        { BeverageSubCategories.SweetenedBeverages, ".*(sweetened-beverage).*" },
-        { BeverageSubCategories.UnsweetenedBeverages, ".*(unsweetened-beverage).*" },
-        { BeverageSubCategories.Waters, ".*(water).*" },
-        { BeverageSubCategories.Teas, ".*(tea).*" },
-        { BeverageSubCategories.Juices, ".*(juice).*" },
-        { BeverageSubCategories.Sodas, ".*(sodas|carbonated-soft-drinks).*" },
-        { BeverageSubCategories.Coffee, ".*(coffee|cold-brew|latte).*" },
-        { BeverageSubCategories.EnergyDrink, ".*(energy-drink).*" }
+        { Beverages.All, ".*(water|cold-brew|latte|coffee|soft-drink|soda|juice|tea|energy-drink|beer|wine|sweetened-beverage).*" },
+        { Beverages.SweetenedBeverages, ".*(sweetened-beverage).*" },
+        { Beverages.UnsweetenedBeverages, ".*(unsweetened-beverage).*" },
+        { Beverages.Waters, ".*(water).*" },
+        { Beverages.Teas, ".*(tea).*" },
+        { Beverages.Juices, ".*(juice).*" },
+        { Beverages.Sodas, ".*(soda|carbonated-soft-drinks).*" },
+        { Beverages.Coffee, ".*(coffee|cold-brew|latte).*" },
+        { Beverages.EnergyDrink, ".*(energy-drink).*" }
     };
 
-    private static readonly Dictionary<SnacksAndAppetizersSubCategories, string> _snacksAndAppetizersSubCategories = new()
+    private static readonly Dictionary<SnacksAndAppetizers, string> _snacksAndAppetizersSubCategories = new()
     {
-        { SnacksAndAppetizersSubCategories.All, "" },
-        { SnacksAndAppetizersSubCategories.Crackers, ".*(cracker).*" },
-        { SnacksAndAppetizersSubCategories.Chips, ".*(chip|crisps).*" },
-        { SnacksAndAppetizersSubCategories.NutsAndLegumes, ".*(nuts|legumes|seeds|trailmix).*" },
-        { SnacksAndAppetizersSubCategories.Popcorn, ".*(popcorn).*" },
-        { SnacksAndAppetizersSubCategories.Pretzels, ".*(pretzel).*" },
-        { SnacksAndAppetizersSubCategories.Dips, ".*(dips|hummus|salsa|cheese-dip).*" }
+        { SnacksAndAppetizers.All, "" },
+        { SnacksAndAppetizers.Crackers, ".*(cracker).*" },
+        { SnacksAndAppetizers.Chips, ".*(chip|crisps).*" },
+        { SnacksAndAppetizers.NutsAndLegumes, ".*(nuts|legumes|seeds|trailmix).*" },
+        { SnacksAndAppetizers.Popcorn, ".*(popcorn).*" },
+        { SnacksAndAppetizers.Pretzels, ".*(pretzel).*" },
+        { SnacksAndAppetizers.Dips, ".*(dips|hummus|salsa|cheese-dip).*" }
     };
 
-    private static readonly Dictionary<BreakfastSubCategories, string> _breakfastSubCategories = new()
+    private static readonly Dictionary<Breakfast, string> _breakfastSubCategories = new()
     {
-        { BreakfastSubCategories.All, "" },
-        { BreakfastSubCategories.Cereals, ".*(breakfast-cereal).*" },
-        { BreakfastSubCategories.Bars, ".*(cereal-bars).*" },
-        { BreakfastSubCategories.Oats, ".*(oat|porridge).*" },
-        { BreakfastSubCategories.PancakesAndWaffles, ".*(pancake|waffle).*" },
-        { BreakfastSubCategories.Yogurt, ".*(yogurt).*" },
-        { BreakfastSubCategories.Breads, ".*(toast|breakfast-bread|bagel).*" },
-        { BreakfastSubCategories.Spreads, ".*(jam|jelly|nut-butter|honey).*" }
+        { Breakfast.All, "" },
+        { Breakfast.Cereals, ".*(breakfast-cereal).*" },
+        { Breakfast.Bars, ".*(cereal-bars).*" },
+        { Breakfast.Oats, ".*(oat|porridge).*" },
+        { Breakfast.PancakesAndWaffles, ".*(pancake|waffle).*" },
+        { Breakfast.Yogurt, ".*(yogurt).*" },
+        { Breakfast.Breads, ".*(toast|breakfast-bread|bagel).*" },
+        { Breakfast.Spreads, ".*(jam|jelly|nut-butter|honey).*" }
     };
 
-    private static readonly Dictionary<BakeryAndDessertsSubCategories, string> _dessertsAndBakerySubCategories = new()
+    private static readonly Dictionary<BakeryAndDesserts, string> _bakeryAndDessertsSubCategories = new()
     {
-        { BakeryAndDessertsSubCategories.All, "" },
-        { BakeryAndDessertsSubCategories.IceCream, ".*(ice-cream).*" },
-        { BakeryAndDessertsSubCategories.BiscuitsAndCakes, ".*(biscuits-and-cakes|cakes|muffins|cupcakes).*" },
-        { BakeryAndDessertsSubCategories.Pastries, ".*(pastries|pastry|danish|donuts|doughnuts).*" },
-        { BakeryAndDessertsSubCategories.Cookies, ".*(cookie).*" },
-        { BakeryAndDessertsSubCategories.Candy, ".*(candies|candy).*" },
-        { BakeryAndDessertsSubCategories.Chocolate, ".*(chocolate).*" },
-        { BakeryAndDessertsSubCategories.PiesAndTarts, ".*(pies|tarts).*" },
-        { BakeryAndDessertsSubCategories.PuddingsAndCustards, ".*(pudding|custard).*" },
-        { BakeryAndDessertsSubCategories.Breads, ".*(bread).*" }
+        { BakeryAndDesserts.All, "" },
+        { BakeryAndDesserts.IceCream, ".*(ice-cream).*" },
+        { BakeryAndDesserts.BiscuitsAndCakes, ".*(biscuits-and-cakes|cakes|muffins|cupcakes).*" },
+        { BakeryAndDesserts.Pastries, ".*(pastries|pastry|danish|donuts|doughnuts).*" },
+        { BakeryAndDesserts.Cookies, ".*(cookie).*" },
+        { BakeryAndDesserts.Candy, ".*(candies|candy).*" },
+        { BakeryAndDesserts.Chocolate, ".*(chocolate).*" },
+        { BakeryAndDesserts.PiesAndTarts, ".*(pies|tarts).*" },
+        { BakeryAndDesserts.PuddingsAndCustards, ".*(pudding|custard).*" },
+        { BakeryAndDesserts.Breads, ".*(bread).*" }
     };
 
-    private static readonly Dictionary<GrainSubCategories, string> _grainSubCategories = new()
+    private static readonly Dictionary<Grains, string> _grainSubCategories = new()
     {
-        { GrainSubCategories.All, "" },
-        { GrainSubCategories.Pasta, ".*(pasta).*" },
-        { GrainSubCategories.Noodles, ".*(noodle).*" },
-        { GrainSubCategories.Rice, ".*(rice).*" },
-        { GrainSubCategories.Barley, ".*(barley).*" },
+        { Grains.All, "" },
+        { Grains.Pasta, ".*(pasta).*" },
+        { Grains.Noodles, ".*(noodle).*" },
+        { Grains.Rice, ".*(rice).*" },
+        { Grains.Barley, ".*(barley).*" },
     };
 
-    public static string GetMainFoodCategoryRegex(MainFoodCategories category)
+    public static string GetMainFoodCategoryRegex(string mainCategory)
     {
-        return _mainFoodCategories[category];
+        var mainCategoryEnum = Enum.Parse(typeof(MainFoodCategories), mainCategory);
+
+        return _mainFoodCategories[(MainFoodCategories)mainCategoryEnum];
     }
 
-    public static string GetBeverageSubCategoryRegex(BeverageSubCategories category)
+    public static string GetSubCategoryRegex(string mainCategory, string subCategory)
     {
-        return _beverageSubCategories[category];
-    }
+        var enumNamespace = typeof(MainFoodCategories).Namespace;
+        var subCategoryType = Type.GetType($"{enumNamespace}.{mainCategory}");
+        if (subCategoryType == null)
+            return "";
 
-    public static string GetSnackAndAppetizersSubCategoryRegex(SnacksAndAppetizersSubCategories category)
-    {
-        return _snacksAndAppetizersSubCategories[category];
-    }
+        var subCategoryEnum = Enum.Parse(subCategoryType, subCategory);
 
-    public static string GetBreakfastSubCategoryRegex(BreakfastSubCategories category)
-    {
-        return _breakfastSubCategories[category];
-    }
+        string regex = "";
+        switch (subCategoryEnum)
+        {
+            case Beverages:
+                regex = _beverageSubCategories[(Beverages)subCategoryEnum];
+                break;
+            case SnacksAndAppetizers:
+                regex = _snacksAndAppetizersSubCategories[(SnacksAndAppetizers)subCategoryEnum];
+                break;
+            case Breakfast:
+                regex = _breakfastSubCategories[(Breakfast)subCategoryEnum];
+                break;
+            case BakeryAndDesserts:
+                regex = _bakeryAndDessertsSubCategories[(BakeryAndDesserts)subCategoryEnum];
+                break;
+            case Grains:
+                regex = _grainSubCategories[(Grains)subCategoryEnum];
+                break;
+        }
 
-    public static string GetDessertsAndBakerySubCategoryRegex(BakeryAndDessertsSubCategories category)
-    {
-        return _dessertsAndBakerySubCategories[category];
-    }
-
-    public static string GetGrainSubCategoryRegex(GrainSubCategories category)
-    {
-        return _grainSubCategories[category];
+        return regex;
     }
 }

@@ -20,4 +20,9 @@ public class CacheService
     {
         return (await _redis.StringGetAsync(key).ConfigureAwait(false)).ToString();
     }
+
+    public async Task DeleteCacheValue(string key)
+    {
+        await _redis.KeyDeleteAsync(key);
+    }
 }
