@@ -33,7 +33,7 @@ public class FoodService
 
     private readonly string _barcodeSplitPattern = @"^(...)(...)(...)(.*)$";
 
-    private readonly string _enumsNamespace;
+    private readonly string _categoryEnumsNamespace;
 
     public FoodService(DatabaseService<FoodItem> databaseService, CacheService cache)
     {
@@ -41,7 +41,7 @@ public class FoodService
         _cache = cache;
 
         // Set the namespace of the food enums so we can ensure we can find the sub categories w/ reflection
-        _enumsNamespace = typeof(MainFoodCategories).Namespace ?? "";
+        _categoryEnumsNamespace = typeof(MainFoodCategories).Namespace ?? "";
     }
 
     // **********************
@@ -165,12 +165,16 @@ public class FoodService
         return $"{_imageBaseUrl}/{folderName}/{fileName}";
     }
 
+    // TODO: Sorting
     public async Task<List<FoodItemPreviewsResponse>> GetFoodItemPreviewsAsync(FoodItemPreviewsRequest request)
     {
         var sessionId = request.SessionId;
         var prevPage = request.PrevPage;
         var mainCategory = request.Filters.MainCategory;
         var subCategory = request.Filters.SubCategory;
+        var restrictions = request.Filters.Restrictions;
+        var excludedIngredients = request.Filters.ExcludedIngredients;
+        var excludedCustomIngredients = request.Filters.ExcludedCustomIngredients;
 
         var findOptions = new FindOptions<FoodItem, FoodItemPreviewsResponse>
         {
@@ -205,20 +209,61 @@ public class FoodService
         // Category Filtering
         if (mainCategory != null)
         {
-            var mainCategoryRegex = FoodEnumHelper.GetMainFoodCategoryRegex(mainCategory);
+            var mainCategoryRegex = CategoryEnumHelper.GetMainFoodCategoryRegex(mainCategory);
             if (!string.IsNullOrEmpty(mainCategoryRegex))
                 filters.Add(Builders<FoodItem>.Filter.Regex(x => x.Categories, new BsonRegularExpression(mainCategoryRegex, "i")));
 
             if (subCategory != null)
             {
-                var subCategoryRegex = FoodEnumHelper.GetSubCategoryRegex(mainCategory, subCategory);
+                var subCategoryRegex = CategoryEnumHelper.GetSubCategoryRegex(mainCategory, subCategory);
                 if (!string.IsNullOrEmpty(subCategoryRegex))
                     filters.Add(Builders<FoodItem>.Filter.Regex(x => x.Categories, new BsonRegularExpression(subCategoryRegex, "i")));
             }
         }
 
         // Ingredient Filtering
-        
+        if (restrictions != null)
+        {
+            foreach (var restriction in restrictions)
+            {
+                var restrictionRegex = IngredientEnumHelper.GetFoodRestrictionRegex(restriction);
+                filters.Add(
+                    Builders<FoodItem>.Filter.And(
+                        Builders<FoodItem>.Filter.Not(Builders<FoodItem>.Filter.Regex(x => x.IngredientsText, new BsonRegularExpression(restrictionRegex, "i"))),
+                        Builders<FoodItem>.Filter.Not(Builders<FoodItem>.Filter.Regex(x => x.ProductName, new BsonRegularExpression(restrictionRegex, "i")))
+                    )
+                );
+            }
+        }
+
+        if (excludedIngredients != null)
+        {
+            foreach (var ingredient in excludedIngredients)
+            {
+                var ingredientRegex = IngredientEnumHelper.GetIngredientRegex(ingredient);
+                filters.Add(
+                    Builders<FoodItem>.Filter.And(
+                        Builders<FoodItem>.Filter.Not(Builders<FoodItem>.Filter.Regex(x => x.IngredientsText, new BsonRegularExpression(ingredientRegex, "i"))),
+                        Builders<FoodItem>.Filter.Not(Builders<FoodItem>.Filter.Regex(x => x.ProductName, new BsonRegularExpression(ingredientRegex, "i")))
+                    )
+                );
+            }
+        }
+
+        if (excludedCustomIngredients != null)
+        {
+            foreach (var customIngredient in excludedCustomIngredients)
+            {
+                var escapedIngredient = Regex.Escape(customIngredient.Trim());
+                var customIngredientRegex = $"\\b{escapedIngredient}s?\\b";
+                filters.Add(
+                    Builders<FoodItem>.Filter.And(
+                        Builders<FoodItem>.Filter.Not(Builders<FoodItem>.Filter.Regex(x => x.IngredientsText, new BsonRegularExpression(customIngredientRegex, "i"))),
+                        Builders<FoodItem>.Filter.Not(Builders<FoodItem>.Filter.Regex(x => x.ProductName, new BsonRegularExpression(customIngredientRegex, "i")))
+                    )
+                );
+            }
+        }
 
         // Pagination
         if (prevPage && idsShown.Count > 1)
@@ -249,7 +294,7 @@ public class FoodService
         if (!prevPage)
             idsShown.Add(foodItems.Last().Id!);
 
-        await _cache.SetCacheValue($"{_idsShownKey}-{sessionId}", string.Join(',', idsShown), 45).ConfigureAwait(false);
+        await _cache.SetCacheValue($"{_idsShownKey}-{sessionId}", string.Join(',', idsShown), 30).ConfigureAwait(false);
 
         return foodItems;
     }
@@ -267,9 +312,29 @@ public class FoodService
     public SubCategoriesResponse GetSubCategoriesForCategory(SubCategoriesRequest request)
     {
         var response = new SubCategoriesResponse();
-        var enumType = Type.GetType($"{_enumsNamespace}.{ request.MainCategory}");
+        var enumType = Type.GetType($"{_categoryEnumsNamespace}.{ request.MainCategory}");
         if (enumType != null)
             response.SubCategories = [.. Enum.GetNames(enumType)];
+
+        return response;
+    }
+
+    public IngredientsResponse GetFoodIngredients()
+    {
+        var response = new IngredientsResponse()
+        {
+            Ingredients = [.. Enum.GetNames(typeof(Ingredients))]
+        };
+
+        return response;
+    }
+
+    public FoodRestrictionsResponse GetFoodRestrictions()
+    {
+        var response = new FoodRestrictionsResponse()
+        {
+            FoodRestrictions = [.. Enum.GetNames(typeof(FoodRestrictions))]
+        };
 
         return response;
     }
@@ -278,7 +343,7 @@ public class FoodService
     // TODO: Add GetRatingInfo()
 
     // **********************
-    // User by other services
+    // Used by other services
     // **********************
 
     public async Task<List<FoodItemPreviewsResponse>> GetFoodItemPreviewsByIdsAsync(List<string> ids)

@@ -21,7 +21,7 @@ var foodRepo = new DatabaseWork.LocalServices.DatabaseService<FoodItem>(mongoSer
 //var allergensFound = new List<string>();
 
 var filter = Builders<FoodItem>.Filter.And(
-    Builders<FoodItem>.Filter.Regex(x => x.Categories, new BsonRegularExpression(".*(meals|frozen|ready-to-eat).*", "i"))
+    Builders<FoodItem>.Filter.Regex(x => x.Categories, new BsonRegularExpression(".*(water|mineral-water|sparkling-water|soft-drink|soda|juice|coffee|tea|energy-drinks|beer|wine).*", "i"))
     //Builders<FoodItem>.Filter.Regex(x => x.Categories, new BsonRegularExpression(".*plant-based.*", "i"))
 );
 var items = await foodRepo.FindAsync(filter);

@@ -63,16 +63,24 @@ public class FoodItemsController : ControllerBase
     [HttpGet("mainFoodCategories")]
     public IActionResult GetMainFoodCategories()
     {
-        var response = _foodService.GetMainFoodCategories();
-
-        return Ok(response);
+        return Ok(_foodService.GetMainFoodCategories());
     }
 
     [HttpGet("subFoodCategories")]
     public IActionResult GetMainFoodCategories([FromQuery] SubCategoriesRequest request)
     {
-        var response = _foodService.GetSubCategoriesForCategory(request);
+        return Ok(_foodService.GetSubCategoriesForCategory(request));
+    }
 
-        return Ok(response);
+    [HttpGet("ingredients")]
+    public IActionResult GetIngredients()
+    {
+        return Ok(_foodService.GetFoodIngredients());
+    }
+
+    [HttpGet("foodRestrictions")]
+    public IActionResult GetFoodRestrictions()
+    {
+        return Ok(_foodService.GetFoodRestrictions());
     }
 }

@@ -10,6 +10,7 @@ using StackExchange.Redis;
 using Azure.Identity;
 using EmailServices;
 using NutriQuestServices.UserServices;
+using NutriQuestServices.IngredientService;
 
 namespace NutriQuestAPI;
 
@@ -47,6 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<StoreService>();
         services.AddScoped<GeolocationService>();
         services.AddScoped<UserService>();
+        services.AddScoped<IngredientService>();
 
         return services;
     }

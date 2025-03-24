@@ -1,6 +1,6 @@
 ﻿namespace NutriQuestServices.FoodServices.Enums;
 
-// Anything added to these enums must be added to the FoodEnumHelper
+// Anything added to these enums must be added to the CategoryEnumHelper
 public enum MainFoodCategories
 {
     All,
@@ -74,7 +74,7 @@ public enum Grains
     Barley
 }
 
-public static class FoodEnumHelper
+public static class CategoryEnumHelper
 {
     private static readonly Dictionary<MainFoodCategories, string> _mainFoodCategories = new()
     {
