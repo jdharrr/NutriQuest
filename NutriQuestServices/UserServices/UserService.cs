@@ -1,8 +1,8 @@
-using DatabaseServices;
-using DatabaseServices.Models;
+using CacheServices;
 using MongoDB.Driver;
-using NutriQuestServices.FoodServices;
-using NutriQuestServices.FoodServices.Responses;
+using NutriQuestRepositories;
+using NutriQuestRepositories.ProductRepo;
+using NutriQuestRepositories.ProductRepo.Responses;
 using NutriQuestServices.UserServices.Requests;
 using NutriQuestServices.UserServices.Responses;
 
@@ -10,167 +10,186 @@ namespace NutriQuestServices.UserServices;
 
 public class UserService
 {
-    private readonly DatabaseService<User> _dbService;
+    private readonly UserRepository _userRepo;
 
-    private readonly FoodService _foodService;
+    private readonly ProductRepository _productRepo;
 
-    public UserService(DatabaseService<User> dbService, FoodService foodService)
+    private readonly CacheService _cache;
+
+    private readonly int _ratingsPerPage = 3;
+
+    private readonly string _lastPageShownKey = "lastPageNum";
+
+    public UserService(UserRepository userRepo, ProductRepository productRepo, CacheService cacheService)
     {
-        _dbService = dbService;
-        _foodService = foodService;
-    }
+        _userRepo = userRepo;
+        _productRepo = productRepo;
+        _cache = cacheService;
+    }  
 
-    public async Task<UserAccountResponse?> GetUserAccountAsync(UserAccountRequest request)
+    public async Task<UserAccountResponse> GetUserAccountAsync(UserAccountRequest request)
     {
-        var findFilter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var findOptions = new FindOptions<User, UserAccountResponse>
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
+
+        return new UserAccountResponse
         {
-            Projection = Builders<User>.Projection.Expression(x =>
-            new UserAccountResponse {
-                Name = x.Name,
-                Email = x.Email,
-                NumberInCart = x.NumberInCart,
-                NumberInFavorites = x.NumberInFavorites
-            })
+            Name = user.Name,
+            Email = user.Email,
+            NumberInCart = user.NumberInCart,
+            NumberInFavorites = user.NumberInFavorites
         };
-
-        return await _dbService.FindOneAsync(findFilter, findOptions).ConfigureAwait(false);
     }
 
-    public async Task<FavoritesAddResponse?> AddItemToFavoritesAsync(FavoritesAddRequest request)
+    public async Task<FavoritesAddResponse> AddItemToFavoritesAsync(FavoritesAddRequest request)
     {
         var response = new FavoritesAddResponse();
 
-        var findFilter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var user = await _dbService.FindOneAsync(findFilter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
         user.Favorites.Add(request.ItemId);
         user.NumberInFavorites += 1;
 
-        var update = Builders<User>.Update.Set(x => x.Favorites, user.Favorites);
-        var updateResponse = await _dbService.UpdateOneAsync(findFilter, update).ConfigureAwait(false);
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.AddSuccess = updateResponse.ModifiedCount == 1;
 
         return response;
     }
 
-    public async Task<FavoritesDeleteResponse?> DeleteItemFromFavoritesAsync(FavoritesDeleteRequest request)
+    public async Task<FavoritesDeleteResponse> DeleteItemFromFavoritesAsync(FavoritesDeleteRequest request)
     {
         var response = new FavoritesDeleteResponse();
 
-        var findFilter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var user = await _dbService.FindOneAsync(findFilter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
         user.Favorites.Remove(request.ItemId);
         user.NumberInFavorites -= 1;
 
-        var update = Builders<User>.Update.Set(x => x.Favorites, user.Favorites);
-        var updateResponse = await _dbService.UpdateOneAsync(findFilter, update).ConfigureAwait(false);
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.DeleteSuccess = updateResponse.ModifiedCount == 1;
 
         return response;
     }
 
-    public async Task<FavoritesClearResponse?> ClearFavoritesAsync(FavoritesClearRequest request)
+    public async Task<FavoritesClearResponse> ClearFavoritesAsync(FavoritesClearRequest request)
     {
         var response = new FavoritesClearResponse();
 
-        var findFilter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var user = await _dbService.FindOneAsync(findFilter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
         user.Favorites.Clear();
         user.NumberInFavorites = 0;
 
-        var update = Builders<User>.Update.Set(x => x.Favorites, user.Favorites);
-        var updateResponse = await _dbService.UpdateOneAsync(findFilter, update).ConfigureAwait(false);
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.ClearSuccess = updateResponse.ModifiedCount == 1;
 
         return response;
     }
 
-    public async Task<List<FoodItemPreviewsResponse>?> GetFavoritesAsync(GetFavoritesRequest request)
+    public async Task<List<ProductPreviewsResponse>> GetFavoritesAsync(GetFavoritesRequest request)
     {
-        var findFilter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var user = await _dbService.FindOneAsync(findFilter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
-        return await _foodService.GetFoodItemPreviewsByIdsAsync(user.Favorites).ConfigureAwait(false);
+        return await _productRepo.GetProductPreviewsByIdsAsync(user.Favorites).ConfigureAwait(false);
     }
 
-    public async Task<AddToCartResponse?> AddItemToCartAsync(AddToCartRequest request)
+    public async Task<AddToCartResponse> AddItemToCartAsync(AddToCartRequest request)
     {
         var response = new AddToCartResponse();
 
-        var findFilter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var user = await _dbService.FindOneAsync(findFilter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
         user.Cart.Add(request.ItemId);
         user.NumberInCart += 1;
 
-        var update = Builders<User>.Update.Set(x => x.Cart, user.Cart)
-                                          .Set(x => x.NumberInCart, user.NumberInCart);
-        var updateResponse = await _dbService.UpdateOneAsync(findFilter, update).ConfigureAwait(false);
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.AddSuccess = updateResponse.ModifiedCount == 1;
 
         return response;
     }
 
-    public async Task<DeleteFromCartResponse?> DeleteItemFromCartAsync(DeleteFromCartRequest request)
+    public async Task<DeleteFromCartResponse> DeleteItemFromCartAsync(DeleteFromCartRequest request)
     {
         var response = new DeleteFromCartResponse();
 
-        var findFilter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var user = await _dbService.FindOneAsync(findFilter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
         user.Cart.Remove(request.ItemId);
         user.NumberInCart -= 1;
 
-        var update = Builders<User>.Update.Set(x => x.Cart, user.Cart)
-                                          .Set(x => x.NumberInCart, user.NumberInCart);
-        var updateResponse = await _dbService.UpdateOneAsync(findFilter, update).ConfigureAwait(false);
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.DeleteSuccess = updateResponse.ModifiedCount == 1;
 
         return response;
     }
 
-    public async Task<ClearCartResponse?> ClearCartAsync(ClearCartRequest request)
+    public async Task<ClearCartResponse> ClearCartAsync(ClearCartRequest request)
     {
         var response = new ClearCartResponse();
 
-        var findFilter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var user = await _dbService.FindOneAsync(findFilter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
         user.Cart.Clear();
         user.NumberInCart = 0;
 
-        var update = Builders<User>.Update.Set(x => x.Cart, user.Cart)
-                                          .Set(x => x.NumberInCart, user.NumberInCart);
-        var updateResponse = await _dbService.UpdateOneAsync(findFilter, update).ConfigureAwait(false);
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.ClearSuccess = updateResponse.ModifiedCount == 1;
 
         return response;
     }
 
-    public async Task<List<FoodItemPreviewsResponse>?> GetCartAsync(GetCartRequest request)
+    public async Task<List<ProductPreviewsResponse>> GetCartAsync(GetCartRequest request)
     {
-        var findFilter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var user = await _dbService.FindOneAsync(findFilter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
-        return await _foodService.GetFoodItemPreviewsByIdsAsync(user.Cart).ConfigureAwait(false);
+        return await _productRepo.GetProductPreviewsByIdsAsync(user.Cart).ConfigureAwait(false);
+    }
+
+    public async Task<UserRatingsResponse> GetUserRatingsAsync(UserRatingsRequest request)
+    {
+        var response = new UserRatingsResponse();
+
+        int lastPageShown = 0;
+        var lastShownValue = await _cache.GetCacheValue($"{_lastPageShownKey}-{request.UserId}").ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(lastShownValue) && int.TryParse(lastShownValue, out var value))
+            lastPageShown = value;
+
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
+
+        var currentPage = request.PrevPage ? Math.Max(0, lastPageShown - 2) : lastPageShown;
+
+        var ratingsToShow = user.Ratings.OrderBy(x => x).Skip(currentPage * _ratingsPerPage).Take(_ratingsPerPage);
+
+        foreach (var rating in ratingsToShow)
+        {
+            var item = await _productRepo.GetProductByIdAsync(rating.ItemId, true).ConfigureAwait(false);
+            if (item == null)
+                continue;
+        
+            response.Ratings.Add(new RatingInfo
+            {
+                ProductName = item.ProductName,
+                Rating = rating.Rating,
+                Comment = rating.Comment,
+                Date = rating.Date,
+                ImageUrl = item.ImageUrl
+            });
+        }
+
+        if (ratingsToShow.Any())
+        {
+            await _cache.SetCacheValue($"{_lastPageShownKey}-{request.UserId}", (currentPage + 1).ToString(), 30).ConfigureAwait(false);
+        }
+
+        return response;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace NutriQuestServices.FoodServices.Responses;
+﻿namespace NutriQuestRepositories.ProductRepo.Responses;
 
 public class IngredientsResponse
 {

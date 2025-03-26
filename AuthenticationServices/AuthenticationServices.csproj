@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DatabaseServices\DatabaseServices.csproj" />
     <ProjectReference Include="..\EmailServices\EmailServices.csproj" />
+    <ProjectReference Include="..\NutriQuestServices\NutriQuestServices.csproj" />
   </ItemGroup>
 
 </Project>

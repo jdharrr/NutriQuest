@@ -1,6 +1,6 @@
-﻿using NutriQuestServices.FoodServices.Enums;
+﻿using NutriQuestRepositories.ProductRepo.Enums;
 
-namespace NutriQuestServices.FoodServices.Responses;
+namespace NutriQuestRepositories.ProductRepo.Responses;
 
 public class MainFoodCategoriesResponse
 {

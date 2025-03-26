@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CacheServices\CacheServices.csproj" />
-    <ProjectReference Include="..\NutriQuestRepositories\NutriQuestRepositories.csproj" />
+    <ProjectReference Include="..\DatabaseServices\DatabaseServices.csproj" />
   </ItemGroup>
 
 </Project>

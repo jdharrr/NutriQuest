@@ -11,46 +11,82 @@ using MongoDB.Driver;
 
 var mongoSettings = new MongoSettings
 {
-    ConnectionString = "mongodb://localhost:27017/",
-    Name = "foodFactsCleaned"
+    ConnectionString = "mongodb+srv://jharr:52-Ochre-4765@capstone2025.noiwb.mongodb.net/",
+    Name = "nutriQuest"
 };
 var mongoService = new DatabaseWork.LocalServices.MongoService(mongoSettings);
-var foodRepo = new DatabaseWork.LocalServices.DatabaseService<FoodItem>(mongoService);
-//var tempRepo = new DatabaseWork.DatabaseService<TempRepoData>(mongoService);
+var userRepo = new DatabaseWork.LocalServices.DatabaseService<User>(mongoService);
 
-//var allergensFound = new List<string>();
+var itemRatings = new List<ItemRating>();
 
-var filter = Builders<FoodItem>.Filter.And(
-    Builders<FoodItem>.Filter.Regex(x => x.Categories, new BsonRegularExpression(".*(water|mineral-water|sparkling-water|soft-drink|soda|juice|coffee|tea|energy-drinks|beer|wine).*", "i"))
-    //Builders<FoodItem>.Filter.Regex(x => x.Categories, new BsonRegularExpression(".*plant-based.*", "i"))
-);
-var items = await foodRepo.FindAsync(filter);
-Console.WriteLine(items);
+var rand = new Random();
 
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6403272b198c24fa740",
+    Rating = (int)rand.NextInt64(5),
+});
 
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6403272b198c24fa741",
+    Rating = (int)rand.NextInt64(5),
+});
 
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6413272b198c24fa742",
+    Rating = (int)rand.NextInt64(5),
+});
 
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6413272b198c24fa743",
+    Rating = (int)rand.NextInt64(5),
+});
 
-//foreach (var item in items)
-//{
-//    foreach (var foodGroup in item.Allergens ?? [])
-//    {
-//        if (!allergensFound.Contains(foodGroup))
-//            allergensFound.Add(foodGroup);
-//    }
-//}
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6413272b198c24fa744",
+    Rating = (int)rand.NextInt64(5),
+});
 
-//var tempData = new TempRepoData
-//{
-//    AllAllergens = allergensFound
-//};
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6413272b198c24fa745",
+    Rating = (int)rand.NextInt64(5),
+});
 
-//await tempRepo.InsertOneAsync(tempData);
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6413272b198c24fa746",
+    Rating = (int)rand.NextInt64(5),
+});
 
-//public class TempRepoData : BaseModel, IMongoDocument
-//{
-//    public static string? CollectionName => "tempData";
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6413272b198c24fa747",
+    Rating = (int)rand.NextInt64(5),
+});
 
-//    public List<string> AllAllergens { get; set; } = [];
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6413272b198c24fa748",
+    Rating = (int)rand.NextInt64(5),
+});
 
-//};
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6413272b198c24fa749",
+    Rating = (int)rand.NextInt64(5),
+});
+
+itemRatings.Add(new ItemRating
+{
+    ItemId = "67b2b6413272b198c24fa74a",
+    Rating = (int)rand.NextInt64(5),
+});
+
+var filter = Builders<User>.Filter.Eq(x => x.Id, "67bcfa2717146e7f1b715a98");
+var update = Builders<User>.Update.Set(x => x.Ratings, itemRatings);
+await userRepo.UpdateOneAsync(filter, update).ConfigureAwait(false);

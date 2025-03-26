@@ -11,8 +11,8 @@ namespace NutriQuestAPI.Controllers;
 [Route("nutriQuestApi/geolocation")]
 public class GeolocationController : ControllerBase
 {
-    private readonly GeolocationService _locationService; 
-    
+    private readonly GeolocationService _locationService;
+
     public GeolocationController(GeolocationService locationService)
     {
         _locationService = locationService;
@@ -21,10 +21,13 @@ public class GeolocationController : ControllerBase
     [HttpGet("storesByZipCode")]
     public async Task<IActionResult> GetNearbyStoresByZipCodeAsync([FromQuery] StoresByZipCodeRequest request)
     {
-        var response = await _locationService.GetValidStoresForLocationAsync(request).ConfigureAwait(false);
-        if (response.Stores.Count == 0)
-            return NotFound();
-
-        return Ok(response);
+        try
+        {
+            return Ok(await _locationService.GetValidStoresForLocationAsync(request).ConfigureAwait(false));
+        }
+        catch (Exception) 
+        {
+            return Problem("An error occurred while processing the request.");
+        }
     }
 }

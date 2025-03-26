@@ -12,6 +12,7 @@ builder.Services.ConfigureDatabase(builder.Configuration);
 builder.Services.ConfigureRedis(builder.Configuration);
 builder.Services.ConfigureGoogleApi(builder.Configuration);
 builder.Services.ConfigureAuthentication(builder.Configuration);
+builder.Services.ConfigureNutriQuestRepositories();
 builder.Services.ConfigureNutriQuestServices();
 
 // Other Services

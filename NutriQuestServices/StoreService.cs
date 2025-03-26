@@ -1,22 +1,13 @@
-using DatabaseServices;
-using DatabaseServices.Models;
-using MongoDB.Driver;
+using NutriQuestRepositories;
 
 namespace NutriQuestServices;
 
 public class StoreService
 {
-    private readonly DatabaseService<Store> _dbService;
+    private readonly StoreRepository _storeRepo;
     
-    public StoreService(DatabaseService<Store> dbService)
+    public StoreService(StoreRepository storeRepo)
     {
-        _dbService = dbService;
-    }
-
-    public async Task<List<Store>> GetValidStoresAsync(List<string> foundStores)
-    {
-        var filter = Builders<Store>.Filter.In(x => x.Name, foundStores);
-
-        return await _dbService.FindAsync(filter).ConfigureAwait(false);
+        _storeRepo = storeRepo;
     }
 }

@@ -3,7 +3,7 @@
 namespace DatabaseServices.Models;
 
 [BsonIgnoreExtraElements]
-public class FoodItem : BaseModel, IMongoDocument
+public class Product : BaseModel, IMongoDocument
 {
     public static string CollectionName => "foodItems";
 
@@ -48,10 +48,14 @@ public class FoodItem : BaseModel, IMongoDocument
     public List<Image>? Images { get; set; } = [];
 
     public double? Price { get; set; } = 0.00;
-    
-    public string? Rating { get; set; } = string.Empty;
+
+    public Dictionary<int, int> AllRatings = [];
+
+    public double Rating { get; set; } = 0.0;
 
     public int NumberOfRatings { get; set; } = 0;
 
     public List<string>? StoresInStock { get; set; } = [];
+
+    public string? ImageUrl { get; set; }
 }

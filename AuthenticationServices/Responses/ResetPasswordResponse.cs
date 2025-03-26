@@ -2,5 +2,5 @@
 
 public class ResetPasswordResponse
 {
-    public bool? ResetSuccess { get; set; }
+    public bool ResetSuccess { get; set; }
 }

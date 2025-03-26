@@ -1,4 +1,4 @@
-﻿namespace NutriQuestServices.FoodServices.Requests;
+﻿namespace NutriQuestServices.ProductServices.Requests;
 
 public class SubCategoriesRequest
 {

@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace DatabaseServices.Models;
@@ -26,4 +27,25 @@ public class User: BaseModel, IMongoDocument
     public int NumberInFavorites { get; set; } = 0;
 
     public int NumberInCart { get; set; } = 0;
+
+    public List<ItemRating> Ratings { get; set; } = [];
+}
+
+public class ItemRating : IComparable<ItemRating>
+{
+    public required string ItemId { get; set; }
+
+    public required int Rating { get; set; }
+
+    public string? Comment { get; set; }
+
+    public DateTime Date { get; set; } = DateTime.UtcNow;
+
+    public int CompareTo(ItemRating? other)
+    {
+        if (other == null)
+            return 1;
+
+        return this.Date.CompareTo(other.Date);
+    }
 }

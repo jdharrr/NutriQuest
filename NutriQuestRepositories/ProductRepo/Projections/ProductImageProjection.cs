@@ -1,14 +1,12 @@
 ﻿using DatabaseServices.Models;
 
-namespace NutriQuestServices.FoodServices.Projections;
+namespace NutriQuestRepositories.ProductRepo.Projections;
 
-public class FoodItemImageProjection
+public class ProductImageProjection
 {
     public required string Id { get; set; }
 
     public required List<Image> Images { get; set; }
 
     public required string Code { get; set; }
-
-    public required int Rev { get; set; }
 }

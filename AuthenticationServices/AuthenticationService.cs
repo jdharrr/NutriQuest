@@ -3,19 +3,19 @@ using System.Security.Cryptography;
 using System.Text;
 using AuthenticationServices.Requests;
 using AuthenticationServices.Responses;
-using DatabaseServices;
 using DatabaseServices.Models;
 using EmailServices;
 using EmailServices.Requests;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using LoginRequest = AuthenticationServices.Requests.LoginRequest;
+using NutriQuestRepositories;
+using NutriQuestServices.UserServices;
 
 namespace AuthenticationServices;
 
 public class AuthenticationService
 {
-    private readonly DatabaseService<User> _dbService;
+    private readonly UserRepository _userRepo;
 
     private readonly TokenService _tokenService;
 
@@ -23,9 +23,9 @@ public class AuthenticationService
 
     private readonly JwtSettings _jwtSettings;
     
-    public AuthenticationService(DatabaseService<User> dbService, TokenService tokenService, EmailService emailService, IOptions<JwtSettings> jwtSettings)
+    public AuthenticationService(UserRepository userRepo, TokenService tokenService, EmailService emailService, IOptions<JwtSettings> jwtSettings)
     {
-        _dbService = dbService;
+        _userRepo = userRepo;
         _tokenService = tokenService;
         _emailService = emailService;
         _jwtSettings = jwtSettings.Value;
@@ -33,8 +33,7 @@ public class AuthenticationService
 
     public async Task<bool> CreateNewUserAsync(NewUserRequest request)
     {
-        var existsFilter = Builders<User>.Filter.Eq(x => x.Email, request.Email);
-        var existingUser = await _dbService.FindOneAsync(existsFilter).ConfigureAwait(false);
+        var existingUser = await _userRepo.GetUserByEmailAsync(request.Email);
         if (existingUser != null)
             return false;
 
@@ -50,7 +49,7 @@ public class AuthenticationService
         user.Password = Hash(request.Password, salt);
         user.Salt = Convert.ToBase64String(salt);
 
-        await _dbService.InsertOneAsync(user).ConfigureAwait(false);
+        await _userRepo.InsertUserAsync(user).ConfigureAwait(false);
 
         return true;
     }
@@ -59,54 +58,48 @@ public class AuthenticationService
     {
         var response = new LoginResponse();
 
-        var filter = Builders<User>.Filter.Eq(x => x.Email, request.Email);
-        var user = await _dbService.FindOneAsync(filter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByEmailAsync(request.Email).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
-        if (IsValidHash(request.Password, user.Password!, user.Salt!))
-            response.Token = _tokenService.GenerateAccessToken(user.Id);
+        if (!IsValidHash(request.Password, user.Password!, user.Salt!))
+            throw new InvalidPasswordException();    
+        
+        response.Token = _tokenService.GenerateAccessToken(user.Id);
 
         return response;
     }
 
-    public async Task<ChangePasswordResponse?> ChangePasswordAsync(ChangePasswordRequest request)
+    public async Task<ChangePasswordResponse> ChangePasswordAsync(ChangePasswordRequest request)
     {
         var response = new ChangePasswordResponse();
 
-        var filter = Builders<User>.Filter.Eq(x => x.Id, request.UserId);
-        var user = await _dbService.FindOneAsync(filter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
         if (!IsValidHash(request.CurrentPassword, user.Password!, user.Salt!))
-            return response;
+            throw new InvalidPasswordException("Incorrect current password.");
 
-        var newPasswordHash = Hash(request.NewPassword, Convert.FromBase64String(user.Salt!));
+        user.Password = Hash(request.NewPassword, Convert.FromBase64String(user.Salt!));
 
-        var updateDef = Builders<User>.Update.Set(x => x.Password, newPasswordHash);
-        var updateResponse = await _dbService.UpdateOneAsync(filter, updateDef).ConfigureAwait(false);
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.ChangeSuccess = updateResponse.ModifiedCount == 1;
 
         return response;
     }   
 
-    public async Task<ForgotPasswordResponse?> ForgotPasswordAsync(ForgotPasswordRequest request)
+    public async Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request)
     {
         var response = new ForgotPasswordResponse();
 
-        var emailFilter = Builders<User>.Filter.Eq(x => x.Email, request.Email);
-        var user = await _dbService.FindOneAsync(emailFilter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByEmailAsync(request.Email).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
         var resetToken = _tokenService.GeneratePasswordResetToken(user.Id, request.Email);
-        var resetTokenHash = Hash(resetToken, Convert.FromBase64String(user.Salt!));
 
-        var updateFilter = Builders<User>.Filter.Eq(x => x.Id, user.Id);
-        var update = Builders<User>.Update.Set(x => x.PasswordResetToken, resetTokenHash)
-                                          .Set(x => x.PasswordResetExpiration, DateTime.UtcNow.AddMinutes(int.Parse(_jwtSettings.AccessExpiryMinutes)));
-        var updateResponse = await _dbService.UpdateOneAsync(updateFilter, update).ConfigureAwait(false);
+        user.PasswordResetToken = Hash(resetToken, Convert.FromBase64String(user.Salt!));
+        user.PasswordResetExpiration = DateTime.UtcNow.AddMinutes(int.Parse(_jwtSettings.AccessExpiryMinutes));
+
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.SendSuccess = updateResponse.ModifiedCount == 1;
 
         if (response.SendSuccess == true)
@@ -115,7 +108,7 @@ public class AuthenticationService
         return response;
     }
 
-    public async Task<ResetPasswordResponse?> ResetPasswordAsync(ResetPasswordRequest request)
+    public async Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request)
     {
         var response = new ResetPasswordResponse();
 
@@ -123,24 +116,20 @@ public class AuthenticationService
         var token = handler.ReadJwtToken(request.ResetToken);
         var emailClaim = token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Email)?.Value;
 
-        var filter = Builders<User>.Filter.Eq(x => x.Email, emailClaim);
-        var user = await _dbService.FindOneAsync(filter).ConfigureAwait(false);
-        if (user == null)
-            return null;
+        var user = await _userRepo.GetUserByEmailAsync(emailClaim).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
 
         if (user.PasswordResetExpiration == null || user.PasswordResetExpiration < DateTime.UtcNow)
-            return response;
+            throw new InvalidTokenException();
 
         if (Hash(request.ResetToken, Convert.FromBase64String(user.Salt!)) != user.PasswordResetToken)
-            return response;
+            throw new InvalidTokenException();
 
-        var newPasswordHash = Hash(request.NewPassword, Convert.FromBase64String(user.Salt!));
+        user.Password = Hash(request.NewPassword, Convert.FromBase64String(user.Salt!));
+        user.PasswordResetExpiration = null;
+        user.PasswordResetToken = null;
 
-        var updateFilter = Builders<User>.Filter.Eq(x => x.Id, user.Id);
-        var update = Builders<User>.Update.Set(x => x.Password, newPasswordHash)
-                                          .Unset(x => x.PasswordResetExpiration)
-                                          .Unset(x => x.PasswordResetToken);
-        var updateResponse = await _dbService.UpdateOneAsync(updateFilter, update).ConfigureAwait(false);
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.ResetSuccess = updateResponse.ModifiedCount == 1;
 
         return response;

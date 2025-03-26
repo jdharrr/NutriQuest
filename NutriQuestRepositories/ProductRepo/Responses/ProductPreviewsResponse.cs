@@ -1,6 +1,6 @@
-namespace NutriQuestServices.FoodServices.Responses;
+namespace NutriQuestRepositories.ProductRepo.Responses;
 
-public class FoodItemPreviewsResponse
+public class ProductPreviewsResponse
 {
     public string? Id { get; set; }
 
@@ -12,5 +12,5 @@ public class FoodItemPreviewsResponse
 
     public string? Brands { get; set; }
 
-    public string? Rating { get; set; }
+    public double? Rating { get; set; }
 }

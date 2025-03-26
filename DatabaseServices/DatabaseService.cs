@@ -102,4 +102,14 @@ public class DatabaseService<TModel>
 
         return new UpdateResponse { MatchedCount = result.MatchedCount, ModifiedCount = result.ModifiedCount };
     }
+
+    public async Task<UpdateResponse> ReplaceOneAsync(TModel model)
+    {
+        var filter = Builders<TModel>.Filter.Eq(x => x.Id, model.Id);
+        var result = await _collection.ReplaceOneAsync(filter, model);
+        if (!result.IsAcknowledged)
+            return new UpdateResponse { MatchedCount = 0, ModifiedCount = 0 };
+
+        return new UpdateResponse { MatchedCount = result.MatchedCount, ModifiedCount = result.ModifiedCount };
+    }
 }

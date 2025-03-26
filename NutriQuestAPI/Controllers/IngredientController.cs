@@ -18,6 +18,13 @@ public class IngredientController : ControllerBase
 	[HttpGet("validateIngredient")]
 	public async Task<IActionResult> ValidateIngredientAsync([FromQuery] CustomIngredientRequest request)
 	{
-		return Ok(await _ingredientService.ValidateCustomIngredientAsync(request).ConfigureAwait(false));
+		try
+		{
+			return Ok(await _ingredientService.ValidateCustomIngredientAsync(request).ConfigureAwait(false));
+		}
+		catch (Exception)
+		{
+			return Problem("An error occurred while processing the request.");
+		}
 	}
 }

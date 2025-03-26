@@ -1,4 +1,4 @@
-﻿namespace NutriQuestServices.FoodServices.Enums;
+﻿namespace NutriQuestRepositories.ProductRepo.Enums;
 
 // Anything added to these enums must be added to the IngredientEnumHelper
 public enum Ingredients

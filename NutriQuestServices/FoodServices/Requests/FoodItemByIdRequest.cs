@@ -1,6 +1,0 @@
-﻿namespace NutriQuestServices.FoodServices.Requests;
-
-public class FoodItemByIdRequest
-{
-    public required string ItemId { get; set; }
-}

@@ -3,6 +3,7 @@ using AuthenticationServices.Requests;
 using EmailServices.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NutriQuestServices.UserServices;
 using System.Text.RegularExpressions;
 
 namespace NutriQuestAPI.Controllers;
@@ -15,6 +16,8 @@ public class AuthenticationController : ControllerBase
 
     private readonly string _emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
 
+    private readonly string _genericProblemResponse = "An error occurred while processing the request.";
+
     public AuthenticationController(AuthenticationService authService)
     {
         _authService = authService;
@@ -26,7 +29,16 @@ public class AuthenticationController : ControllerBase
         if (!Regex.IsMatch(request.Email, _emailPattern, RegexOptions.IgnoreCase))
             return BadRequest("Incorrect email format.");
 
-        var userCreated = await _authService.CreateNewUserAsync(request).ConfigureAwait(false);
+        bool userCreated;
+        try
+        {
+            userCreated = await _authService.CreateNewUserAsync(request).ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            return Problem(_genericProblemResponse);
+        }
+        
         if (!userCreated)
             return BadRequest("Email already exists.");
 
@@ -36,11 +48,22 @@ public class AuthenticationController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
     {
-        var response = await _authService.LoginAsync(request).ConfigureAwait(false);
-        if (response == null || string.IsNullOrEmpty(response.Token))
-            return BadRequest("Email or password are inccorect.");
-
-        return Ok(response);
+        try
+        {
+            return Ok(await _authService.LoginAsync(request).ConfigureAwait(false));
+        }
+        catch (UserNotFoundException)
+        {
+            return Unauthorized("Email or password are incorrect.");
+        }
+        catch (InvalidPasswordException) 
+        {
+            return Unauthorized("Email or password are inccorect.");
+        }
+        catch (Exception)
+        {
+            return Problem(_genericProblemResponse);
+        }
     }
 
     [Authorize]
@@ -50,14 +73,18 @@ public class AuthenticationController : ControllerBase
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
             return BadRequest("Invalid Parameter");
 
-        var response = await _authService.ChangePasswordAsync(request).ConfigureAwait(false);
-        if (response == null)
-            return NotFound("User not found");
-
-        if (response.ChangeSuccess == null)
-            return Unauthorized("Incorrect current password");
-
-        return Ok(response);
+        try
+        {
+            return Ok(await _authService.ChangePasswordAsync(request).ConfigureAwait(false));
+        }
+        catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidPasswordException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
     }
 
     [HttpPost("forgotPassword")]
@@ -66,23 +93,38 @@ public class AuthenticationController : ControllerBase
         if (!Regex.IsMatch(request.Email, _emailPattern, RegexOptions.IgnoreCase))
             return BadRequest("Incorrect email format.");
 
-        var emailSent = await _authService.ForgotPasswordAsync(request).ConfigureAwait(false);
-        if (emailSent == null)
-            return NotFound("Email not found");
-
-        return Ok(emailSent);
+        try
+        {
+            return Ok(await _authService.ForgotPasswordAsync(request).ConfigureAwait(false));
+        }
+        catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return Problem(_genericProblemResponse);
+        }
     }
 
     [HttpPost("resetPassword")]
     public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
     {
-        var resetResponse = await _authService.ResetPasswordAsync(request).ConfigureAwait(false);
-        if (resetResponse == null)
-            return NotFound("Email not found");
-
-        if (resetResponse.ResetSuccess == null)
-            return Unauthorized("Invalid Token");
-
-        return Ok(resetResponse);
+        try
+        {
+            return Ok(await _authService.ResetPasswordAsync(request).ConfigureAwait(false));
+        }
+        catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidTokenException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+        catch (Exception)
+        {
+            return Problem(_genericProblemResponse);
+        }
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace NutriQuestServices.FoodServices.Requests;
+﻿namespace NutriQuestServices.ProductServices.Requests;
 
-public class FoodItemPreviewsRequest
+public class ProductPreviewsRequest
 {
     public required string SessionId { get; set; }
 

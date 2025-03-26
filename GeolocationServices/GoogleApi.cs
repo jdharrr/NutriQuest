@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using GeolocationServices.Requests;
 using GeolocationServices.Responses;
 using Microsoft.Extensions.Options;
