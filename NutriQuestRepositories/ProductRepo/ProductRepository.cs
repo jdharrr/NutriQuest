@@ -52,8 +52,10 @@ public class ProductRepository
     }
 
     // TODO: Sorting
-    public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(string sessionId, bool prevPage, bool restartPaging, string? mainCategory, string? subCategory, List<string>? restrictions, List<string>? excludedIngredients, List<string>? excludedCustomIngredients)
+    public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(string sessionId, bool prevPage, bool restartPaging, string? mainCategory, string? subCategory, List<string>? restrictions, List<string>? excludedIngredients, List<string>? excludedCustomIngredients, string? sort)
     {
+        var sortFilter = Builders<Product>.Sort.Ascending(x =>x.Id);
+        
         var findOptions = new FindOptions<Product, ProductPreviewsResponse>
         {
             Limit = _itemsPerPage,
@@ -69,6 +71,8 @@ public class ProductRepository
                 }
             )
         };
+        if (sort != null)
+            findOptions.Sort = sortFilter;
 
         List<string> idsShown = [];
         if (restartPaging)
@@ -133,7 +137,7 @@ public class ProductRepository
             foreach (var customIngredient in excludedCustomIngredients)
             {
                 var escapedIngredient = Regex.Escape(customIngredient.Trim());
-                var customIngredientRegex = $"\\b{escapedIngredient}s?\\b";
+                var customIngredientRegex = $@"\b{escapedIngredient}s?\b";
                 filters.Add(
                     Builders<Product>.Filter.And(
                         Builders<Product>.Filter.Not(Builders<Product>.Filter.Regex(x => x.IngredientsText, new BsonRegularExpression(customIngredientRegex, "i"))),
@@ -211,29 +215,21 @@ public class ProductRepository
 
     public string? BuildImageUrl(List<Image> images, string code, ImageType type)
     {
-        var rev = images.Where(x => x.ImageType == type).FirstOrDefault()?.Rev;
+        var rev = images.FirstOrDefault(x => x.ImageType == type)?.Rev;
         if (rev == null)
             return null;
 
         var barcode = code.PadLeft(13, '0');
         var splitMatch = Regex.Match(barcode, _barcodeSplitPattern);
 
-        string imageName = string.Empty;
-        switch (type)
+        var imageName = type switch
         {
-            case ImageType.Front:
-                imageName = _frontImageName;
-                break;
-            case ImageType.Nutrition:
-                imageName = _nutritionImageName;
-                break;
-            case ImageType.Ingredients:
-                imageName = _ingredientsImageName;
-                break;
-            case ImageType.Packaging:
-                imageName = _packagingImageName;
-                break;
-        }
+            ImageType.Front => _frontImageName,
+            ImageType.Nutrition => _nutritionImageName,
+            ImageType.Ingredients => _ingredientsImageName,
+            ImageType.Packaging => _packagingImageName,
+            _ => string.Empty
+        };
 
         var folderName = $"{splitMatch.Groups[1].Value}/{splitMatch.Groups[2].Value}/{splitMatch.Groups[3].Value}/{splitMatch.Groups[4].Value}";
         var fileName = $"{imageName}.{rev}.400.jpg";

@@ -18,7 +18,7 @@ public class ProductController : ControllerBase
         _productService = productService;
     }
 
-    [HttpGet("itemById")]
+    [HttpGet("productById")]
     public async Task<IActionResult> GetProductByIdAsync([FromQuery] ProductByIdRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.ProductId, out var _))
@@ -38,7 +38,7 @@ public class ProductController : ControllerBase
         }
     }
 
-    [HttpPost("itemPreviews")]
+    [HttpPost("productPreviews")]
     public async Task<IActionResult> GetProductPreviewsAsync([FromBody] ProductPreviewsRequest request)
     {
         try
@@ -51,7 +51,7 @@ public class ProductController : ControllerBase
         }
     }
 
-    [HttpGet("itemFrontImage")]
+    [HttpGet("productFrontImage")]
     public async Task<IActionResult> GetProductFrontImageAsync([FromQuery] ImageRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.ProductId, out var _))
@@ -71,7 +71,7 @@ public class ProductController : ControllerBase
         }
     }
 
-    [HttpGet("itemAllImages")]
+    [HttpGet("productAllImages")]
     public async Task<IActionResult> GetProductAllImagesAsync([FromQuery] ImageRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.ProductId, out var _))
@@ -91,7 +91,7 @@ public class ProductController : ControllerBase
         }
     }
 
-    [HttpPost("addItemRating")]
+    [HttpPost("addProductRating")]
     public async Task<IActionResult> AddProductRatingAsync([FromBody] AddRatingRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.ProductId, out var _))

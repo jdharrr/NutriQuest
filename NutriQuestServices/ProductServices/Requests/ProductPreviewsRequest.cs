@@ -9,6 +9,8 @@ public class ProductPreviewsRequest
     public required bool RestartPaging { get; set; }
 
     public FilterOptions Filters { get; set; } = new();
+    
+    public string? Sort { get; set; }
 }
 
 public class FilterOptions

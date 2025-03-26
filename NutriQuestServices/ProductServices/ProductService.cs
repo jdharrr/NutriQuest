@@ -79,7 +79,7 @@ public class ProductService
 
     public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(ProductPreviewsRequest request)
     {
-        return await _productRepo.GetProductPreviewsPagingAsync(request.SessionId, request.PrevPage, request.RestartPaging, request.Filters.MainCategory, request.Filters.SubCategory, request.Filters.Restrictions, request.Filters.ExcludedIngredients, request.Filters.ExcludedCustomIngredients).ConfigureAwait(false);
+        return await _productRepo.GetProductPreviewsPagingAsync(request.SessionId, request.PrevPage, request.RestartPaging, request.Filters.MainCategory, request.Filters.SubCategory, request.Filters.Restrictions, request.Filters.ExcludedIngredients, request.Filters.ExcludedCustomIngredients, request.Sort).ConfigureAwait(false);
     }
 
     public async Task<AddRatingResponse> AddProductRatingAsync(AddRatingRequest request)
