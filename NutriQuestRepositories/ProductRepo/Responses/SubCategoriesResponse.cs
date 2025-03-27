@@ -2,5 +2,5 @@
 
 public class SubCategoriesResponse
 {
-    public List<string> SubCategories { get; set; } = [];
+    public List<string> SubFoodCategories { get; set; } = [];
 }
