@@ -143,7 +143,7 @@ public class ProductService
         
         var enumType = Type.GetType($"{_categoryEnumsNamespace}.{request.MainCategory}, {_categoryEnumsAssembly}");
         if (enumType != null)
-            response.SubCategories = [.. Enum.GetNames(enumType)];
+            response.SubFoodCategories = [.. Enum.GetNames(enumType)];
         
         return response;
     }
