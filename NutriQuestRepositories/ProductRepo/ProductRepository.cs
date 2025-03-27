@@ -54,8 +54,6 @@ public class ProductRepository
     // TODO: Sorting
     public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(string sessionId, bool prevPage, bool restartPaging, string? mainCategory, string? subCategory, List<string>? restrictions, List<string>? excludedIngredients, List<string>? excludedCustomIngredients, string? sort)
     {
-        var sortFilter = Builders<Product>.Sort.Ascending(x =>x.Id);
-        
         var findOptions = new FindOptions<Product, ProductPreviewsResponse>
         {
             Limit = _itemsPerPage,
@@ -72,7 +70,20 @@ public class ProductRepository
             )
         };
         if (sort != null)
-            findOptions.Sort = sortFilter;
+        {
+            var sortDefinition = Builders<Product>.Sort.Ascending(x => x.Id);
+            if (sort.Contains("Descending"))
+            {
+                 
+            }
+            else
+            {
+                
+            }
+
+            
+            findOptions.Sort = sortDefinition;
+        }
 
         List<string> idsShown = [];
         if (restartPaging)

@@ -169,4 +169,17 @@ public class ProductController : ControllerBase
             return Problem(_genericProblemResponse);
         }
     }
+
+    [HttpGet("sortOptions")]
+    public IActionResult GetSortOptions()
+    {
+        try
+        {
+            return Ok(_productService.GetSortOptions());
+        }
+        catch (Exception)
+        {
+            return Problem(_genericProblemResponse);
+        }
+    }
 }

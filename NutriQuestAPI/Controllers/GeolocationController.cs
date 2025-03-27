@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace NutriQuestAPI.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("nutriQuestApi/geolocation")]
 public class GeolocationController : ControllerBase

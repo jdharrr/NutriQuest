@@ -16,6 +16,8 @@ public class ProductService
 
     private readonly string _categoryEnumsNamespace;
 
+    private readonly string _categoryEnumsAssembly;
+
     public ProductService(ProductRepository productRepo, UserRepository userRepo)
     {
         _productRepo = productRepo;
@@ -23,6 +25,7 @@ public class ProductService
 
         // Set the namespace of the food enums so we can ensure we can find the sub categories w/ reflection
         _categoryEnumsNamespace = typeof(MainFoodCategories).Namespace ?? "";
+        _categoryEnumsAssembly = typeof(MainFoodCategories).Assembly.ToString();
     }
 
     public async Task<Product> GetProductByIdAsync(ProductByIdRequest request)
@@ -135,12 +138,13 @@ public class ProductService
     }
 
     public SubCategoriesResponse GetSubCategoriesForCategory(SubCategoriesRequest request)
-    {
+    { 
         var response = new SubCategoriesResponse();
-        var enumType = Type.GetType($"{_categoryEnumsNamespace}.{ request.MainCategory}");
+        
+        var enumType = Type.GetType($"{_categoryEnumsNamespace}.{request.MainCategory}, {_categoryEnumsAssembly}");
         if (enumType != null)
             response.SubCategories = [.. Enum.GetNames(enumType)];
-
+        
         return response;
     }
 
@@ -159,6 +163,16 @@ public class ProductService
         var response = new FoodRestrictionsResponse()
         {
             FoodRestrictions = [.. Enum.GetNames(typeof(FoodRestrictions))]
+        };
+
+        return response;
+    }
+
+    public SortOptionsResponse GetSortOptions()
+    {
+        var response = new SortOptionsResponse
+        {
+            SortOptions = [.. Enum.GetNames(typeof(SortOptions))]
         };
 
         return response;
