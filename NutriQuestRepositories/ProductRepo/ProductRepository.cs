@@ -1,4 +1,6 @@
-﻿using CacheServices;
+﻿using System.Linq.Expressions;
+using System.Text.Json;
+using CacheServices;
 using DatabaseServices;
 using DatabaseServices.Models;
 using DatabaseServices.Responses;
@@ -54,6 +56,20 @@ public class ProductRepository
     // TODO: Sorting
     public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(string sessionId, bool prevPage, bool restartPaging, string? mainCategory, string? subCategory, List<string>? restrictions, List<string>? excludedIngredients, List<string>? excludedCustomIngredients, string? sort)
     {
+        var sortProperty = "_id";
+        var sortPropertyType = typeof(string);
+        if (sort != null)
+        {
+            var property = SortOptionsHelper.GetProductPropertyForSort(sort);
+            if (!string.IsNullOrEmpty(property))
+                sortProperty = property;
+            
+            var productType = typeof(Product);
+            var sortproperty = productType.GetProperty(char.ToUpper(sort[0]) + sort[1..]);
+            if (sortproperty != null)
+                sortPropertyType = sortproperty.PropertyType;
+        }
+        
         var findOptions = new FindOptions<Product, ProductPreviewsResponse>
         {
             Limit = _itemsPerPage,
@@ -69,32 +85,23 @@ public class ProductRepository
                 }
             )
         };
+        
+        // Sorting
         if (sort != null)
         {
-            var sortDefinition = Builders<Product>.Sort.Ascending(x => x.Id);
+            SortDefinition<Product> sortDefinition;
             if (sort.Contains("Descending"))
             {
-                 
+                sortDefinition = Builders<Product>.Sort.Descending(sortProperty)
+                                                       .Ascending(x => x.Id);
             }
             else
             {
-                
+                sortDefinition = Builders<Product>.Sort.Ascending(sortProperty)
+                                                       .Descending(x => x.Id);
             }
 
-            
             findOptions.Sort = sortDefinition;
-        }
-
-        List<string> idsShown = [];
-        if (restartPaging)
-        {
-            await _cache.DeleteCacheValue(sessionId);
-        }
-        else
-        {
-            var idsShownValue = await _cache.GetCacheValue($"{_idsShownKey}-{sessionId}").ConfigureAwait(false);
-            if (!string.IsNullOrEmpty(idsShownValue))
-                idsShown = [.. idsShownValue.Split(',')];
         }
 
         List<FilterDefinition<Product>> filters = [];
@@ -159,22 +166,64 @@ public class ProductRepository
         }
 
         // Pagination
-        if (prevPage && idsShown.Count > 1)
+        List<(string Sort, string Id)> recordsShown = [];
+        if (restartPaging)
         {
-            if (idsShown.Count < 3)
+            await _cache.DeleteCacheValue(sessionId);
+        }
+        else
+        {
+            var idsShownValue = await _cache.GetCacheValue($"{_idsShownKey}-{sessionId}").ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(idsShownValue))
+                recordsShown = JsonSerializer.Deserialize<List<(string, string)>>(idsShownValue);
+        }
+        
+        if (prevPage && recordsShown.Count > 1)
+        {
+            if (recordsShown.Count < 3)
             {
-                idsShown.RemoveAt(1);
+                recordsShown.RemoveAt(1);
             }
             else
             {
-                var prevLastIdShown = idsShown[^3];
-                idsShown.RemoveAt(idsShown.Count - 1);
-                filters.Add(Builders<Product>.Filter.Gt(x => x.Id, prevLastIdShown));
+                var prevLastRecord = recordsShown[^3];
+                recordsShown.RemoveAt(recordsShown.Count - 1);
+
+                if (sort != null)
+                {
+                    if (sortPropertyType == typeof(string))
+                    {
+                        filters.Add(sort.Contains("Descending")
+                            ? Builders<Product>.Filter.Lt(sortProperty, prevLastRecord.Sort)
+                            : Builders<Product>.Filter.Gt(sortProperty, prevLastRecord.Sort));
+                    }
+                    else
+                    {
+                        filters.Add(sort.Contains("Descending")
+                            ? Builders<Product>.Filter.Lt(sortProperty, Convert.ToInt32(prevLastRecord.Sort))
+                            : Builders<Product>.Filter.Gt(sortProperty, Convert.ToInt32(prevLastRecord.Sort)));
+                    }
+                }
+
+                filters.Add(Builders<Product>.Filter.Gt(x => x.Id, prevLastRecord.Id));
             }
         }
-        else if (idsShown.Count > 0 && !prevPage)
+        else if (recordsShown.Count > 0 && !prevPage)
         {
-            filters.Add(Builders<Product>.Filter.Gt(x => x.Id, idsShown.Last()));
+            if (sortPropertyType == typeof(string))
+            {
+                filters.Add(sort.Contains("Descending")
+                    ? Builders<Product>.Filter.Lt(sortProperty, recordsShown.Last().Sort)
+                    : Builders<Product>.Filter.Gt(sortProperty, recordsShown.Last().Sort));
+            }
+            else
+            {
+                filters.Add(sort.Contains("Descending")
+                    ? Builders<Product>.Filter.Lt(sortProperty, Convert.ToInt32(recordsShown.Last().Sort))
+                    : Builders<Product>.Filter.Gt(sortProperty, Convert.ToInt32(recordsShown.Last().Sort)));
+            }
+            
+            filters.Add(Builders<Product>.Filter.Gt(x => x.Id, recordsShown.Last().Id));
         }
 
         var finalFilter = filters.Count > 0 ? Builders<Product>.Filter.And(filters)
@@ -185,9 +234,14 @@ public class ProductRepository
             return [];
 
         if (!prevPage)
-            idsShown.Add(foodItems.Last().Id!);
+        {
+            var productType = typeof(Product);
+            var property = productType.GetProperty(char.ToUpper(sort[0]) + sort[1..]);
+            recordsShown.Add((Sort: property.GetValue(foodItems.Last()), Id: foodItems.Last().Id!));
+        }
 
-        await _cache.SetCacheValue($"{_idsShownKey}-{sessionId}", string.Join(',', idsShown), 30).ConfigureAwait(false);
+        var pageInfoJson = JsonSerializer.Serialize(recordsShown);
+        await _cache.SetCacheValue($"{_idsShownKey}-{sessionId}", pageInfoJson, 30).ConfigureAwait(false);
 
         return foodItems;
     }

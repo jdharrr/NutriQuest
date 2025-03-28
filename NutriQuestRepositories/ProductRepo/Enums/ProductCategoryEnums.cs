@@ -151,9 +151,10 @@ public static class CategoryEnumHelper
 
     public static string GetMainFoodCategoryRegex(string mainCategory)
     {
-        var mainCategoryEnum = Enum.Parse(typeof(MainFoodCategories), mainCategory);
+        if (!Enum.TryParse(typeof(MainFoodCategories), mainCategory, out var value))
+            return "";
 
-        return _mainFoodCategories[(MainFoodCategories)mainCategoryEnum];
+        return _mainFoodCategories[(MainFoodCategories)value];
     }
 
     public static string GetSubCategoryRegex(string mainCategory, string subCategory)
@@ -163,25 +164,26 @@ public static class CategoryEnumHelper
         if (subCategoryType == null)
             return "";
 
-        var subCategoryEnum = Enum.Parse(subCategoryType, subCategory);
+        if (!Enum.TryParse(subCategoryType, subCategory, out var value))
+            return "";
 
         string regex = "";
-        switch (subCategoryEnum)
+        switch (value)
         {
             case Beverages:
-                regex = _beverageSubCategories[(Beverages)subCategoryEnum];
+                regex = _beverageSubCategories[(Beverages)value];
                 break;
             case SnacksAndAppetizers:
-                regex = _snacksAndAppetizersSubCategories[(SnacksAndAppetizers)subCategoryEnum];
+                regex = _snacksAndAppetizersSubCategories[(SnacksAndAppetizers)value];
                 break;
             case Breakfast:
-                regex = _breakfastSubCategories[(Breakfast)subCategoryEnum];
+                regex = _breakfastSubCategories[(Breakfast)value];
                 break;
             case BakeryAndDesserts:
-                regex = _bakeryAndDessertsSubCategories[(BakeryAndDesserts)subCategoryEnum];
+                regex = _bakeryAndDessertsSubCategories[(BakeryAndDesserts)value];
                 break;
             case Grains:
-                regex = _grainSubCategories[(Grains)subCategoryEnum];
+                regex = _grainSubCategories[(Grains)value];
                 break;
         }
 

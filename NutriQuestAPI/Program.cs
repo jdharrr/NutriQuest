@@ -51,7 +51,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("https://proud-grass-047c1c410.6.azurestaticapps.net", "http://127.0.0.1:5500",
-                    "http://127.0.0.1:5115")
+                    "http://127.0.0.1:5115", "http://127.0.0.1:5501")
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
