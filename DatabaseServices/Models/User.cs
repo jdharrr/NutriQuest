@@ -28,12 +28,12 @@ public class User: BaseModel, IMongoDocument
 
     public int NumberInCart { get; set; } = 0;
 
-    public List<ItemRating> Ratings { get; set; } = [];
+    public List<ProductRating> Ratings { get; set; } = [];
 }
 
-public class ItemRating : IComparable<ItemRating>
+public class ProductRating : IComparable<ProductRating>
 {
-    public required string ItemId { get; set; }
+    public required string ProductId { get; set; }
 
     public required int Rating { get; set; }
 
@@ -41,7 +41,7 @@ public class ItemRating : IComparable<ItemRating>
 
     public DateTime Date { get; set; } = DateTime.UtcNow;
 
-    public int CompareTo(ItemRating? other)
+    public int CompareTo(ProductRating? other)
     {
         if (other == null)
             return 1;

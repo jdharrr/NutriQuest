@@ -66,7 +66,7 @@ public class DatabaseService<TModel>
 
         return findFluent;
     }
-
+    
     public async Task<long> DeleteOne(FilterDefinition<TModel> filter, DeleteOptions? options = null, CancellationToken cancellationToken = default)
     {
         var result = await _collection.DeleteOneAsync(filter, options, cancellationToken).ConfigureAwait(false); ;

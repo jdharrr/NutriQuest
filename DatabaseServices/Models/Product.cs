@@ -5,7 +5,7 @@ namespace DatabaseServices.Models;
 [BsonIgnoreExtraElements]
 public class Product : BaseModel, IMongoDocument
 {
-    public static string CollectionName => "foodItems";
+    public static string CollectionName => "products";
 
     public List<string>? Traces { get; set; } = [];
 

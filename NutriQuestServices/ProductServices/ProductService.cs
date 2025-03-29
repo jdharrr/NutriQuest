@@ -92,7 +92,7 @@ public class ProductService
         var item = await _productRepo.GetProductByIdAsync(request.ProductId).ConfigureAwait(false)
             ?? throw new ProductNotFoundException();
 
-        if (!item.AllRatings.TryGetValue(request.Rating, out var value))
+        if (!item.AllRatings.TryGetValue(request.Rating, out _))
         {
             item.AllRatings[request.Rating] = 0;
         }
@@ -113,9 +113,9 @@ public class ProductService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException("Unable to update user's ratings.");
 
-        var itemRating = new ItemRating
+        var itemRating = new ProductRating
         {
-            ItemId = request.ProductId,
+            ProductId = request.ProductId,
             Rating = request.Rating,
             Comment = request.Comment
         };
@@ -127,7 +127,7 @@ public class ProductService
         return response;
     }
 
-    public MainFoodCategoriesResponse GetMainFoodCategories()
+    public static MainFoodCategoriesResponse GetMainFoodCategories()
     {
         var response = new MainFoodCategoriesResponse
         {
@@ -148,7 +148,7 @@ public class ProductService
         return response;
     }
 
-    public IngredientsResponse GetFoodIngredients()
+    public static IngredientsResponse GetFoodIngredients()
     {
         var response = new IngredientsResponse()
         {
@@ -158,7 +158,7 @@ public class ProductService
         return response;
     }
 
-    public FoodRestrictionsResponse GetFoodRestrictions()
+    public static FoodRestrictionsResponse GetFoodRestrictions()
     {
         var response = new FoodRestrictionsResponse()
         {
@@ -168,7 +168,7 @@ public class ProductService
         return response;
     }
 
-    public SortOptionsResponse GetSortOptions()
+    public static SortOptionsResponse GetSortOptions()
     {
         var response = new SortOptionsResponse
         {

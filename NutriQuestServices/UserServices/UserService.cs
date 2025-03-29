@@ -48,7 +48,7 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        user.Favorites.Add(request.ItemId);
+        user.Favorites.Add(request.ProductId);
         user.NumberInFavorites += 1;
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
@@ -64,7 +64,7 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        user.Favorites.Remove(request.ItemId);
+        user.Favorites.Remove(request.ProductId);
         user.NumberInFavorites -= 1;
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
@@ -104,7 +104,7 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        user.Cart.Add(request.ItemId);
+        user.Cart.Add(request.ProductId);
         user.NumberInCart += 1;
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
@@ -120,7 +120,7 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        user.Cart.Remove(request.ItemId);
+        user.Cart.Remove(request.ProductId);
         user.NumberInCart -= 1;
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
@@ -171,7 +171,7 @@ public class UserService
 
         foreach (var rating in ratingsToShow)
         {
-            var item = await _productRepo.GetProductByIdAsync(rating.ItemId, true).ConfigureAwait(false);
+            var item = await _productRepo.GetProductByIdAsync(rating.ProductId, true).ConfigureAwait(false);
             if (item == null)
                 continue;
         

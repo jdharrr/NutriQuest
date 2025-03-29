@@ -123,7 +123,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            return Ok(_productService.GetMainFoodCategories());
+            return Ok(ProductService.GetMainFoodCategories());
         }
         catch (Exception)
         {
@@ -149,7 +149,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            return Ok(_productService.GetFoodIngredients());
+            return Ok(ProductService.GetFoodIngredients());
         }
         catch (Exception)
         {
@@ -162,7 +162,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            return Ok(_productService.GetFoodRestrictions());
+            return Ok(ProductService.GetFoodRestrictions());
         }
         catch (Exception)
         {
@@ -175,7 +175,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            return Ok(_productService.GetSortOptions());
+            return Ok(ProductService.GetSortOptions());
         }
         catch (Exception)
         {

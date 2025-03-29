@@ -53,23 +53,8 @@ public class ProductRepository
         return product;
     }
 
-    // TODO: Sorting
     public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(string sessionId, bool prevPage, bool restartPaging, string? mainCategory, string? subCategory, List<string>? restrictions, List<string>? excludedIngredients, List<string>? excludedCustomIngredients, string? sort)
     {
-        var sortProperty = "_id";
-        var sortPropertyType = typeof(string);
-        if (sort != null)
-        {
-            var property = SortOptionsHelper.GetProductPropertyForSort(sort);
-            if (!string.IsNullOrEmpty(property))
-                sortProperty = property;
-            
-            var productType = typeof(Product);
-            var sortproperty = productType.GetProperty(char.ToUpper(sort[0]) + sort[1..]);
-            if (sortproperty != null)
-                sortPropertyType = sortproperty.PropertyType;
-        }
-        
         var findOptions = new FindOptions<Product, ProductPreviewsResponse>
         {
             Limit = _itemsPerPage,
@@ -77,7 +62,7 @@ public class ProductRepository
                 new ProductPreviewsResponse
                 {
                     Id = x.Id,
-                    Name = x.ProductName,
+                    ProductName = x.ProductName,
                     Price = x.Price,
                     StoresInStock = x.StoresInStock,
                     Brands = x.Brands,
@@ -87,23 +72,29 @@ public class ProductRepository
         };
         
         // Sorting
+        var sortProperty = "_id";
+        var sortPropertyType = typeof(string);
         if (sort != null)
         {
-            SortDefinition<Product> sortDefinition;
-            if (sort.Contains("Descending"))
-            {
-                sortDefinition = Builders<Product>.Sort.Descending(sortProperty)
-                                                       .Ascending(x => x.Id);
-            }
-            else
-            {
-                sortDefinition = Builders<Product>.Sort.Ascending(sortProperty)
-                                                       .Descending(x => x.Id);
-            }
-
+            var propertyName = SortOptionsHelper.GetProductPropertyForSort(sort);
+            if (!string.IsNullOrEmpty(propertyName))
+                sortProperty = propertyName;
+            
+            var productType = typeof(Product);
+            var sortproperty = productType.GetProperty(char.ToUpper(propertyName[0]) + propertyName[1..]);
+            if (sortproperty != null)
+                sortPropertyType = sortproperty.PropertyType;
+        }
+        
+        if (sort != null)
+        {
+            var sortDefinition = Builders<Product>.Sort.Combine(sort.Contains("Descending") ? Builders<Product>.Sort.Descending(sortProperty)
+                                                                                            : Builders<Product>.Sort.Ascending(sortProperty),
+                                                                                              Builders<Product>.Sort.Ascending(x => x.Id));
             findOptions.Sort = sortDefinition;
         }
 
+        // Collection of all needed filters for find query
         List<FilterDefinition<Product>> filters = [];
 
         // Category Filtering
@@ -166,7 +157,7 @@ public class ProductRepository
         }
 
         // Pagination
-        List<(string Sort, string Id)> recordsShown = [];
+        List<CacheRecord> recordsShown = [];
         if (restartPaging)
         {
             await _cache.DeleteCacheValue(sessionId);
@@ -175,55 +166,22 @@ public class ProductRepository
         {
             var idsShownValue = await _cache.GetCacheValue($"{_idsShownKey}-{sessionId}").ConfigureAwait(false);
             if (!string.IsNullOrEmpty(idsShownValue))
-                recordsShown = JsonSerializer.Deserialize<List<(string, string)>>(idsShownValue);
+                recordsShown = JsonSerializer.Deserialize<List<CacheRecord>>(idsShownValue) ?? [];
         }
-        
+
         if (prevPage && recordsShown.Count > 1)
         {
-            if (recordsShown.Count < 3)
-            {
-                recordsShown.RemoveAt(1);
-            }
-            else
+            if (recordsShown.Count > 2)
             {
                 var prevLastRecord = recordsShown[^3];
-                recordsShown.RemoveAt(recordsShown.Count - 1);
-
-                if (sort != null)
-                {
-                    if (sortPropertyType == typeof(string))
-                    {
-                        filters.Add(sort.Contains("Descending")
-                            ? Builders<Product>.Filter.Lt(sortProperty, prevLastRecord.Sort)
-                            : Builders<Product>.Filter.Gt(sortProperty, prevLastRecord.Sort));
-                    }
-                    else
-                    {
-                        filters.Add(sort.Contains("Descending")
-                            ? Builders<Product>.Filter.Lt(sortProperty, Convert.ToInt32(prevLastRecord.Sort))
-                            : Builders<Product>.Filter.Gt(sortProperty, Convert.ToInt32(prevLastRecord.Sort)));
-                    }
-                }
-
-                filters.Add(Builders<Product>.Filter.Gt(x => x.Id, prevLastRecord.Id));
+                filters.Add(BuildPreviewsPaginationFilter(prevLastRecord, sort, sortProperty, sortPropertyType));
             }
+
+            recordsShown.RemoveAt(recordsShown.Count - 1);
         }
         else if (recordsShown.Count > 0 && !prevPage)
         {
-            if (sortPropertyType == typeof(string))
-            {
-                filters.Add(sort.Contains("Descending")
-                    ? Builders<Product>.Filter.Lt(sortProperty, recordsShown.Last().Sort)
-                    : Builders<Product>.Filter.Gt(sortProperty, recordsShown.Last().Sort));
-            }
-            else
-            {
-                filters.Add(sort.Contains("Descending")
-                    ? Builders<Product>.Filter.Lt(sortProperty, Convert.ToInt32(recordsShown.Last().Sort))
-                    : Builders<Product>.Filter.Gt(sortProperty, Convert.ToInt32(recordsShown.Last().Sort)));
-            }
-            
-            filters.Add(Builders<Product>.Filter.Gt(x => x.Id, recordsShown.Last().Id));
+            filters.Add(BuildPreviewsPaginationFilter(recordsShown.Last(), sort, sortProperty, sortPropertyType));
         }
 
         var finalFilter = filters.Count > 0 ? Builders<Product>.Filter.And(filters)
@@ -235,15 +193,53 @@ public class ProductRepository
 
         if (!prevPage)
         {
-            var productType = typeof(Product);
-            var property = productType.GetProperty(char.ToUpper(sort[0]) + sort[1..]);
-            recordsShown.Add((Sort: property.GetValue(foodItems.Last()), Id: foodItems.Last().Id!));
+            if (sort != null)
+            {
+                var sortPropertyValue = foodItems.Last().GetType().GetProperty(char.ToUpper(sortProperty[0]) + sortProperty[1..])?.GetValue(foodItems.Last())?.ToString();
+                if (sortPropertyValue != null)
+                    recordsShown.Add(new CacheRecord { Id = foodItems.Last().Id!, Sort = sortPropertyValue });
+            }
+            else
+            {
+                recordsShown.Add(new CacheRecord { Id = foodItems.Last().Id!, Sort = foodItems.Last().Id!} );
+            }
         }
 
         var pageInfoJson = JsonSerializer.Serialize(recordsShown);
-        await _cache.SetCacheValue($"{_idsShownKey}-{sessionId}", pageInfoJson, 30).ConfigureAwait(false);
+        await _cache.SetCacheValue($"{_idsShownKey}-{sessionId}", pageInfoJson, 20).ConfigureAwait(false);
 
         return foodItems;
+    }
+
+    private static FilterDefinition<Product> BuildPreviewsPaginationFilter(CacheRecord prevRecord, string? sort, string sortProperty, Type sortType)
+    {
+        var idFilter = Builders<Product>.Filter.Gt(x => x.Id, prevRecord.Id);
+        if (sort != null)
+        {
+            FilterDefinition<Product> sortFilter;
+            if (sortType == typeof(string))
+            {
+                sortFilter = sort.Contains("Descending") ? Builders<Product>.Filter.Lt(sortProperty, prevRecord.Sort)
+                                                         : Builders<Product>.Filter.Gt(sortProperty, prevRecord.Sort);
+            }
+            else
+            {
+                sortFilter = sort.Contains("Descending") ? Builders<Product>.Filter.Lt(sortProperty, Convert.ToInt32(prevRecord.Sort))
+                                                         : Builders<Product>.Filter.Gt(sortProperty, Convert.ToInt32(prevRecord.Sort));
+            }
+
+            return Builders<Product>.Filter.Or(
+                sortFilter,
+                Builders<Product>.Filter.And(
+                    Builders<Product>.Filter.Eq(sortProperty, prevRecord.Sort),
+                    idFilter
+                )
+            );
+        }
+        else
+        {
+            return idFilter;
+        }
     }
 
     public async Task<List<ProductPreviewsResponse>> GetProductPreviewsByIdsAsync(List<string> ids)
@@ -259,7 +255,7 @@ public class ProductRepository
                 new ProductPreviewsResponse
                 {
                     Id = x.Id,
-                    Name = x.ProductName,
+                    ProductName = x.ProductName,
                     Price = x.Price,
                     StoresInStock = x.StoresInStock,
                     Brands = x.Brands,

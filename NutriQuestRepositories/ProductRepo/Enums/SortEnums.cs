@@ -1,6 +1,3 @@
-using System.Linq.Expressions;
-using DatabaseServices.Models;
-
 namespace NutriQuestRepositories.ProductRepo.Enums;
 
 public enum SortOptions
@@ -14,7 +11,7 @@ public enum SortOptions
 public static class SortOptionsHelper
 {
     // These MUST match the properties in the Product model
-    public static Dictionary<SortOptions, string> _sortOptions = new()
+    private static readonly Dictionary<SortOptions, string> _sortOptions = new()
     {
         { SortOptions.PriceDescending, "price" },
         { SortOptions.PriceAscending, "price" },
