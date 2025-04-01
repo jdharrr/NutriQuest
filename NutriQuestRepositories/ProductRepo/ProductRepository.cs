@@ -214,32 +214,30 @@ public class ProductRepository
     private static FilterDefinition<Product> BuildPreviewsPaginationFilter(CacheRecord prevRecord, string? sort, string sortProperty, Type sortType)
     {
         var idFilter = Builders<Product>.Filter.Gt(x => x.Id, prevRecord.Id);
-        if (sort != null)
-        {
-            FilterDefinition<Product> sortFilter;
-            if (sortType == typeof(string))
-            {
-                sortFilter = sort.Contains("Descending") ? Builders<Product>.Filter.Lt(sortProperty, prevRecord.Sort)
-                                                         : Builders<Product>.Filter.Gt(sortProperty, prevRecord.Sort);
-            }
-            else
-            {
-                sortFilter = sort.Contains("Descending") ? Builders<Product>.Filter.Lt(sortProperty, Convert.ToInt32(prevRecord.Sort))
-                                                         : Builders<Product>.Filter.Gt(sortProperty, Convert.ToInt32(prevRecord.Sort));
-            }
+        if (sort == null)
+            return idFilter;
 
-            return Builders<Product>.Filter.Or(
-                sortFilter,
-                Builders<Product>.Filter.And(
-                    Builders<Product>.Filter.Eq(sortProperty, prevRecord.Sort),
-                    idFilter
-                )
-            );
+        FilterDefinition<Product> sortFilter;
+        if (sortType == typeof(string))
+        {
+            sortFilter = sort.Contains("Descending")
+                ? Builders<Product>.Filter.Lt(sortProperty, prevRecord.Sort)
+                : Builders<Product>.Filter.Gt(sortProperty, prevRecord.Sort);
         }
         else
         {
-            return idFilter;
+            sortFilter = sort.Contains("Descending")
+                ? Builders<Product>.Filter.Lt(sortProperty, Convert.ToInt32(prevRecord.Sort))
+                : Builders<Product>.Filter.Gt(sortProperty, Convert.ToInt32(prevRecord.Sort));
         }
+
+        return Builders<Product>.Filter.Or(
+            sortFilter,
+            Builders<Product>.Filter.And(
+                Builders<Product>.Filter.Eq(sortProperty, prevRecord.Sort),
+                idFilter
+            )
+        );
     }
 
     public async Task<List<ProductPreviewsResponse>> GetProductPreviewsByIdsAsync(List<string> ids)

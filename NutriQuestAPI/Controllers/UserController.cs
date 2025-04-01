@@ -40,14 +40,14 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("addToFavorites")]
-    public async Task<IActionResult> AddItemToFavoritesAsync([FromQuery] FavoritesAddRequest request)
+    public async Task<IActionResult> AddProductToFavoritesAsync([FromQuery] FavoritesAddRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
             return BadRequest("Invalid Parameter");
 
         try
         {
-            return Ok(await _userService.AddItemToFavoritesAsync(request).ConfigureAwait(false));
+            return Ok(await _userService.AddProductToFavoritesAsync(request).ConfigureAwait(false));
         }
         catch (UserNotFoundException ex)
         {
@@ -59,15 +59,15 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpGet("deleteFromFavorites")]
-    public async Task<IActionResult> DeleteItemFromFavoritesAsync([FromQuery] FavoritesDeleteRequest request)
+    [HttpDelete("deleteFromFavorites")]
+    public async Task<IActionResult> DeleteProductFromFavoritesAsync([FromQuery] FavoritesDeleteRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
             return BadRequest("Invalid Parameter");
 
         try
         {
-            return Ok(await _userService.DeleteItemFromFavoritesAsync(request).ConfigureAwait(false));
+            return Ok(await _userService.DeleteProductFromFavoritesAsync(request).ConfigureAwait(false));
         }
         catch (UserNotFoundException ex)
         {
@@ -79,7 +79,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpGet("clearFavorites")]
+    [HttpDelete("clearFavorites")]
     public async Task<IActionResult> ClearFavoritesAsync([FromQuery] FavoritesClearRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
@@ -119,14 +119,14 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("addToCart")]
-    public async Task<IActionResult> AddItemToCartAsync([FromQuery] AddToCartRequest request)
+    public async Task<IActionResult> AddProductToCartAsync([FromQuery] AddToCartRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
             return BadRequest("Invalid Parameter");
 
         try
         {
-            return Ok(await _userService.AddItemToCartAsync(request).ConfigureAwait(false));
+            return Ok(await _userService.AddProductToCartAsync(request).ConfigureAwait(false));
         }
         catch (UserNotFoundException ex)
         {
@@ -138,15 +138,15 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpGet("deleteFromCart")]
-    public async Task<IActionResult> DeleteItemFromFavoritesAsync([FromQuery] DeleteFromCartRequest request)
+    [HttpDelete("deleteFromCart")]
+    public async Task<IActionResult> DeleteProductFromFavoritesAsync([FromQuery] DeleteFromCartRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
             return BadRequest("Invalid Parameter");
 
         try
         {
-            return Ok(await _userService.DeleteItemFromCartAsync(request).ConfigureAwait(false));
+            return Ok(await _userService.DeleteProductFromCartAsync(request).ConfigureAwait(false));
         }
         catch (UserNotFoundException ex)
         {
@@ -158,7 +158,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpGet("clearCart")]
+    [HttpDelete("clearCart")]
     public async Task<IActionResult> ClearCartAsync([FromQuery] ClearCartRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))

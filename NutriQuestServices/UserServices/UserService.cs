@@ -41,7 +41,7 @@ public class UserService
         };
     }
 
-    public async Task<FavoritesAddResponse> AddItemToFavoritesAsync(FavoritesAddRequest request)
+    public async Task<FavoritesAddResponse> AddProductToFavoritesAsync(FavoritesAddRequest request)
     {
         var response = new FavoritesAddResponse();
 
@@ -57,7 +57,7 @@ public class UserService
         return response;
     }
 
-    public async Task<FavoritesDeleteResponse> DeleteItemFromFavoritesAsync(FavoritesDeleteRequest request)
+    public async Task<FavoritesDeleteResponse> DeleteProductFromFavoritesAsync(FavoritesDeleteRequest request)
     {
         var response = new FavoritesDeleteResponse();
 
@@ -97,7 +97,7 @@ public class UserService
         return await _productRepo.GetProductPreviewsByIdsAsync(user.Favorites).ConfigureAwait(false);
     }
 
-    public async Task<AddToCartResponse> AddItemToCartAsync(AddToCartRequest request)
+    public async Task<AddToCartResponse> AddProductToCartAsync(AddToCartRequest request)
     {
         var response = new AddToCartResponse();
 
@@ -113,7 +113,7 @@ public class UserService
         return response;
     }
 
-    public async Task<DeleteFromCartResponse> DeleteItemFromCartAsync(DeleteFromCartRequest request)
+    public async Task<DeleteFromCartResponse> DeleteProductFromCartAsync(DeleteFromCartRequest request)
     {
         var response = new DeleteFromCartResponse();
 
