@@ -4,15 +4,15 @@
 public enum MainFoodCategories
 {
     All,
-    MealsAndFrozenFoods,
+    Grains,
     Beverages,
-    SnacksAndAppetizers,
     Breakfast,
+    SnacksAndAppetizers,
+    BakeryAndDesserts,
+    MealsAndFrozenFoods,
     CondimentsAndSpreads,
     MeatAndSeafood,
-    Dairies,
-    BakeryAndDesserts,
-    Grains
+    Dairies
 }
 
 public enum Beverages
