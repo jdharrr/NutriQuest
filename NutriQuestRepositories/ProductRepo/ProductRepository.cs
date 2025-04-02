@@ -265,6 +265,37 @@ public class ProductRepository
         return await _dbService.FindAsync(findFilter, findOptions).ConfigureAwait(false);
     }
 
+    public async Task<List<CartPreviewsResponse>> GetCartPreviewsAsync(List<CartProduct> products)
+    {
+        if (products.Count == 0)
+            return [];
+
+        var findFilter = Builders<Product>.Filter.In(x => x.Id, products.Select(x => x.ProductId));
+        var findOptions = new FindOptions<Product, CartPreviewsResponse>
+        {
+            Limit = _itemsPerPage,
+            Projection = Builders<Product>.Projection.Expression(x =>
+                new CartPreviewsResponse
+                {
+                    Id = x.Id,
+                    ProductName = x.ProductName,
+                    Price = x.Price,
+                    StoresInStock = x.StoresInStock,
+                }
+           )
+        };
+
+        var previews = await _dbService.FindAsync(findFilter, findOptions).ConfigureAwait(false);
+
+        foreach (var item in previews)
+        {
+            var productRef = products.Find(x => x.ProductId == item.Id);
+            item.NumberOfProduct = productRef!.NumberOfProduct;
+        }
+
+        return previews;
+    }
+
     public async Task<UpdateResponse> UpdateCompleteProductAsync(Product product)
     {
         var filter = Builders<Product>.Filter.Eq(x => x.Id, product.Id);

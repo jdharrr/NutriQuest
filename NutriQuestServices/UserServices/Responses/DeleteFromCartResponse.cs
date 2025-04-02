@@ -2,5 +2,5 @@
 
 public class DeleteFromCartResponse
 {
-    public bool DeleteSuccess { get; set; }
+    public bool DeleteSuccess { get; set; } = true;
 }

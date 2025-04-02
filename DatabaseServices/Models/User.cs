@@ -18,7 +18,7 @@ public class User: BaseModel, IMongoDocument
 
     public List<string> Favorites { get; set; } = [];
 
-    public List<string> Cart { get; set; } = [];
+    public List<CartProduct> Cart { get; set; } = [];
 
     public string? PasswordResetToken { get; set; }
 
@@ -29,6 +29,15 @@ public class User: BaseModel, IMongoDocument
     public int NumberInCart { get; set; } = 0;
 
     public List<ProductRating> Ratings { get; set; } = [];
+
+    public List<Nutrients> TrackedNutrients { get; set; } = [];
+}
+
+public class CartProduct
+{
+    public required string ProductId { get; set; }
+
+    public int NumberOfProduct { get; set; } = 1;
 }
 
 public class ProductRating : IComparable<ProductRating>
@@ -48,4 +57,17 @@ public class ProductRating : IComparable<ProductRating>
 
         return this.Date.CompareTo(other.Date);
     }
+}
+
+public class Nutrients
+{
+    public DateTime Date { get; set; } = DateTime.UtcNow;
+
+    public double Calories { get; set; } = 0;
+
+    public double Fats { get; set; } = 0;
+
+    public double Proteins { get; set; } = 0;
+
+    public double Carbs { get; set; } = 0;
 }

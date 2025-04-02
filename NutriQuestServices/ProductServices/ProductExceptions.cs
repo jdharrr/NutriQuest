@@ -6,3 +6,10 @@ public class ProductNotFoundException : Exception
 
     public ProductNotFoundException(string message) : base(message) { }
 }
+
+public class ProductExistsException : Exception
+{
+    public ProductExistsException() : base("Product already Exists.") { }
+
+    public ProductExistsException(string? message) : base(message) { }
+}

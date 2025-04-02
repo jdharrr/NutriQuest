@@ -1,8 +1,10 @@
 using CacheServices;
+using DatabaseServices.Models;
 using MongoDB.Driver;
 using NutriQuestRepositories;
 using NutriQuestRepositories.ProductRepo;
 using NutriQuestRepositories.ProductRepo.Responses;
+using NutriQuestServices.ProductServices;
 using NutriQuestServices.UserServices.Requests;
 using NutriQuestServices.UserServices.Responses;
 
@@ -48,6 +50,9 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
+        if (user.Favorites.Contains(request.ProductId))
+            throw new ProductExistsException("Product already exists in favorites.");
+
         user.Favorites.Add(request.ProductId);
         user.NumberInFavorites += 1;
 
@@ -64,8 +69,11 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
+        if (!user.Favorites.Contains(request.ProductId))
+            return response;
+
         user.Favorites.Remove(request.ProductId);
-        user.NumberInFavorites -= 1;
+        user.NumberInFavorites = Math.Max(user.NumberInFavorites - 1, 0);
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.DeleteSuccess = updateResponse.ModifiedCount == 1;
@@ -104,7 +112,16 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        user.Cart.Add(request.ProductId);
+        var productInCart = user.Cart.Find(x => x.ProductId == request.ProductId);
+        if (productInCart == null)
+        {
+            user.Cart.Add(new CartProduct { ProductId = request.ProductId });
+        }
+        else
+        {
+            productInCart.NumberOfProduct++;
+        }
+
         user.NumberInCart += 1;
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
@@ -120,8 +137,21 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        user.Cart.Remove(request.ProductId);
-        user.NumberInCart -= 1;
+        var productInCart = user.Cart.Find(x => x.ProductId == request.ProductId);
+        if (productInCart == null)
+        {
+            return response;
+        }
+        else if (productInCart.NumberOfProduct == 1)
+        {
+            user.Cart.Remove(productInCart);
+        }
+        else
+        {
+            productInCart.NumberOfProduct--;
+        }
+
+        user.NumberInCart = Math.Max(user.NumberInCart - 1, 0);
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.DeleteSuccess = updateResponse.ModifiedCount == 1;
@@ -145,12 +175,12 @@ public class UserService
         return response;
     }
 
-    public async Task<List<ProductPreviewsResponse>> GetCartAsync(GetCartRequest request)
+    public async Task<List<CartPreviewsResponse>> GetCartAsync(GetCartRequest request)
     {
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        return await _productRepo.GetProductPreviewsByIdsAsync(user.Cart).ConfigureAwait(false);
+        return await _productRepo.GetCartPreviewsAsync(user.Cart).ConfigureAwait(false);
     }
 
     public async Task<UserRatingsResponse> GetUserRatingsAsync(UserRatingsRequest request)
@@ -189,6 +219,52 @@ public class UserService
         {
             await _cache.SetCacheValue($"{_lastPageShownKey}-{request.UserId}", (currentPage + 1).ToString(), 30).ConfigureAwait(false);
         }
+
+        return response;
+    }
+
+    public async Task<AddNutrientsResponse> AddNutrientsEntryAsync(AddNutrientsRequest request)
+    {
+        var response = new AddNutrientsResponse();
+
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
+
+        var entry = new Nutrients
+        {
+            Calories = request.Nutrients.Calories,
+            Fats = request.Nutrients.Fats,
+            Proteins = request.Nutrients.Proteins,
+            Carbs = request.Nutrients.Carbs,
+            Date = request.Nutrients.Date
+        };
+
+        user.TrackedNutrients.Add(entry);
+
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
+        response.AddNutrientsSuccess = updateResponse.ModifiedCount == 1;
+
+        return response;
+    }
+
+    public async Task<NutrientsResponse> GetTrackedNutrientsAsync(NutrientsRequest request)
+    {
+        var response = new NutrientsResponse();
+
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
+
+        List<Nutrients> nutrientsInRange = [];
+        if (request.DateRange.EndDate == null)
+        {
+            nutrientsInRange = [.. user.TrackedNutrients.Where(x => x.Date.Date == request.DateRange.StartDate.Date)];
+        }
+        else
+        {
+            nutrientsInRange = [.. user.TrackedNutrients.Where(x => x.Date.Date >= request.DateRange.StartDate.Date && x.Date.Date <= request.DateRange.EndDate?.Date)];
+        }
+
+        response.TrackedNutrients = nutrientsInRange;
 
         return response;
     }

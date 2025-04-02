@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NutriQuestServices.ProductServices;
 using NutriQuestServices.UserServices;
 using NutriQuestServices.UserServices.Requests;
 
@@ -52,6 +53,10 @@ public class UserController : ControllerBase
         catch (UserNotFoundException ex)
         {
             return NotFound(ex.Message);
+        }
+        catch (ProductExistsException ex)
+        {
+            return Conflict(ex.Message);
         }
         catch (Exception)
         {
@@ -132,6 +137,10 @@ public class UserController : ControllerBase
         {
             return NotFound(ex.Message);
         }
+        catch (ProductExistsException ex)
+        {
+            return Conflict(ex.Message);
+        }
         catch (Exception)
         {
             return Problem(_genericProblemResponse);
@@ -207,6 +216,46 @@ public class UserController : ControllerBase
         try
         {
             return Ok(await _userService.GetUserRatingsAsync(request).ConfigureAwait(false));
+        }
+        catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return Problem(_genericProblemResponse);
+        }
+    }
+
+    [HttpPost("getNutrients")]
+    public async Task<IActionResult> GetTrackedNutrientsAsync([FromBody] NutrientsRequest request)
+    {
+        if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
+            return BadRequest("Invalid Parameter");
+
+        try
+        {
+            return Ok(await _userService.GetTrackedNutrientsAsync(request).ConfigureAwait(false));
+        }
+        catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return Problem(_genericProblemResponse);
+        }
+    }
+
+    [HttpPost("addNutrients")]
+    public async Task<IActionResult> AddNutrientsEntryAsync([FromBody] AddNutrientsRequest request)
+    {
+        if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
+            return BadRequest("Invalid Parameter");
+
+        try
+        {
+            return Ok(await _userService.AddNutrientsEntryAsync(request).ConfigureAwait(false));
         }
         catch (UserNotFoundException ex)
         {
