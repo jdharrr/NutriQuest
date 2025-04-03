@@ -39,7 +39,8 @@ public class UserService
             Name = user.Name,
             Email = user.Email,
             NumberInCart = user.NumberInCart,
-            NumberInFavorites = user.NumberInFavorites
+            NumberInFavorites = user.NumberInFavorites,
+            NumberTrackedNutrients = user.NumberTrackedNutrients
         };
     }
 
@@ -181,6 +182,45 @@ public class UserService
             ?? throw new UserNotFoundException();
 
         return await _productRepo.GetCartPreviewsAsync(user.Cart).ConfigureAwait(false);
+    }
+
+    public async Task<SaveCartResponse> SaveCartAsync(SaveCartRequest request)
+    {
+        var response = new SaveCartResponse();
+
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
+
+        var savedCart = new SavedCart
+        {
+            Products = user.Cart
+        };
+
+        user.SavedCarts.Add(savedCart);
+
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
+        response.SaveCartSuccess = updateResponse.ModifiedCount == 1;
+
+        return response;
+    }
+
+    public async Task<RemoveSavedCartResponse> RemoveSavedCartAsync(RemoveSavedCartRequest request)
+    {
+        var response = new RemoveSavedCartResponse();
+
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+            ?? throw new UserNotFoundException();
+
+        var savedCart = user.SavedCarts.Find(x => x.Id == request.CartId);
+        if (savedCart == null)
+            return response;
+
+        user.SavedCarts.Remove(savedCart);
+
+        var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
+        response.RemoveCartSuccess = updateResponse.ModifiedCount == 1;
+
+        return response;
     }
 
     public async Task<UserRatingsResponse> GetUserRatingsAsync(UserRatingsRequest request)

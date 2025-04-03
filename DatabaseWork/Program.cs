@@ -11,7 +11,7 @@
 //
 // var mongoSettings = new MongoSettings
 // {
-//     ConnectionString = "mongodb+srv://jharr:52-Ochre-4765@capstone2025.noiwb.mongodb.net/",
+//     ConnectionString = "",
 //     Name = "nutriQuest"
 // };
 // var mongoService = new DatabaseWork.LocalServices.MongoService(mongoSettings);

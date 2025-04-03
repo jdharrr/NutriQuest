@@ -9,4 +9,6 @@ public class UserAccountResponse
     public int NumberInCart { get; set; }
 
     public int NumberInFavorites { get; set; }
+
+    public int NumberTrackedNutrients { get; set; }
 }

@@ -1,4 +1,3 @@
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace DatabaseServices.Models;
@@ -20,6 +19,8 @@ public class User: BaseModel, IMongoDocument
 
     public List<CartProduct> Cart { get; set; } = [];
 
+    public List<SavedCart> SavedCarts { get; set; } = [];
+
     public string? PasswordResetToken { get; set; }
 
     public DateTime? PasswordResetExpiration { get; set; }
@@ -31,6 +32,8 @@ public class User: BaseModel, IMongoDocument
     public List<ProductRating> Ratings { get; set; } = [];
 
     public List<Nutrients> TrackedNutrients { get; set; } = [];
+
+    public int NumberTrackedNutrients { get => TrackedNutrients.Count; }
 }
 
 public class CartProduct
@@ -38,6 +41,13 @@ public class CartProduct
     public required string ProductId { get; set; }
 
     public int NumberOfProduct { get; set; } = 1;
+}
+
+public class SavedCart : BaseModel
+{
+    public DateTime Date = DateTime.UtcNow;
+
+    public List<CartProduct> Products { get; set; } = [];
 }
 
 public class ProductRating : IComparable<ProductRating>
