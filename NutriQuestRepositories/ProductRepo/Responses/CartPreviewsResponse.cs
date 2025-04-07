@@ -1,6 +1,13 @@
 ﻿namespace NutriQuestRepositories.ProductRepo.Responses;
 
-public class CartPreviewsResponse
+public class CartResponse
+{
+    public double TotalPrice { get; set; } = 0;
+
+    public List<CartProductPreview> Products { get; set; } = [];
+}
+
+public class CartProductPreview
 {
     public string? Id { get; set; }
 

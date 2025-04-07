@@ -17,7 +17,7 @@ public class User: BaseModel, IMongoDocument
 
     public List<string> Favorites { get; set; } = [];
 
-    public List<CartProduct> Cart { get; set; } = [];
+    public Cart Cart { get; set; } = new Cart();
 
     public List<SavedCart> SavedCarts { get; set; } = [];
 
@@ -33,7 +33,16 @@ public class User: BaseModel, IMongoDocument
 
     public List<Nutrients> TrackedNutrients { get; set; } = [];
 
-    public int NumberTrackedNutrients { get => TrackedNutrients.Count; }
+    public int NumberTrackedNutrients => TrackedNutrients.Count;
+}
+
+public class Cart
+{
+    public List<CartProduct> Products { get; set; } = [];
+    
+    public int NumberOfProducts => Products.Count;
+
+    public double TotalPrice { get; set; } = 0;
 }
 
 public class CartProduct
@@ -47,7 +56,7 @@ public class SavedCart : BaseModel
 {
     public DateTime Date = DateTime.UtcNow;
 
-    public List<CartProduct> Products { get; set; } = [];
+    public Cart Cart { get; set; } = new Cart();
 }
 
 public class ProductRating : IComparable<ProductRating>

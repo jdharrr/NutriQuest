@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheServices", "CacheServi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailServices", "EmailServices\EmailServices.csproj", "{9CC2C867-6BB5-4CAE-9ADF-0F8A06297DB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseWork", "DatabaseWork\DatabaseWork.csproj", "{F1FB8D54-E864-4640-AF62-9C60DAAE8CF6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NutriQuestRepositories", "NutriQuestRepositories\NutriQuestRepositories.csproj", "{4F900EF3-F352-4F1F-AE35-116139D66A5B}"
 EndProject
 Global
@@ -55,10 +53,6 @@ Global
 		{9CC2C867-6BB5-4CAE-9ADF-0F8A06297DB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CC2C867-6BB5-4CAE-9ADF-0F8A06297DB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CC2C867-6BB5-4CAE-9ADF-0F8A06297DB8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1FB8D54-E864-4640-AF62-9C60DAAE8CF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1FB8D54-E864-4640-AF62-9C60DAAE8CF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1FB8D54-E864-4640-AF62-9C60DAAE8CF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1FB8D54-E864-4640-AF62-9C60DAAE8CF6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4F900EF3-F352-4F1F-AE35-116139D66A5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4F900EF3-F352-4F1F-AE35-116139D66A5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F900EF3-F352-4F1F-AE35-116139D66A5B}.Release|Any CPU.ActiveCfg = Release|Any CPU

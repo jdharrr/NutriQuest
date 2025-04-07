@@ -265,17 +265,19 @@ public class ProductRepository
         return await _dbService.FindAsync(findFilter, findOptions).ConfigureAwait(false);
     }
 
-    public async Task<List<CartPreviewsResponse>> GetCartPreviewsAsync(List<CartProduct> products)
+    public async Task<CartResponse> GetCartPreviewsAsync(Cart cart)
     {
-        if (products.Count == 0)
-            return [];
+        var response = new CartResponse();
+        
+        if (cart.Products.Count == 0)
+            return response;
 
-        var findFilter = Builders<Product>.Filter.In(x => x.Id, products.Select(x => x.ProductId));
-        var findOptions = new FindOptions<Product, CartPreviewsResponse>
+        var findFilter = Builders<Product>.Filter.In(x => x.Id, cart.Products.Select(x => x.ProductId));
+        var findOptions = new FindOptions<Product, CartProductPreview>
         {
             Limit = _itemsPerPage,
             Projection = Builders<Product>.Projection.Expression(x =>
-                new CartPreviewsResponse
+                new CartProductPreview
                 {
                     Id = x.Id,
                     ProductName = x.ProductName,
@@ -286,14 +288,16 @@ public class ProductRepository
         };
 
         var previews = await _dbService.FindAsync(findFilter, findOptions).ConfigureAwait(false);
-
         foreach (var item in previews)
         {
-            var productRef = products.Find(x => x.ProductId == item.Id);
+            var productRef = cart.Products.Find(x => x.ProductId == item.Id);
             item.NumberOfProduct = productRef!.NumberOfProduct;
         }
 
-        return previews;
+        response.Products = previews;
+        response.TotalPrice = cart.TotalPrice;
+        
+        return response;
     }
 
     public async Task<UpdateResponse> UpdateCompleteProductAsync(Product product)

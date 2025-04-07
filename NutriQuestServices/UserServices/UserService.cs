@@ -113,16 +113,20 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        var productInCart = user.Cart.Find(x => x.ProductId == request.ProductId);
+        var product = await _productRepo.GetProductByIdAsync(request.ProductId).ConfigureAwait(false) 
+                      ?? throw new ProductNotFoundException();
+        
+        var productInCart = user.Cart.Products.Find(x => x.ProductId == product.Id);
         if (productInCart == null)
         {
-            user.Cart.Add(new CartProduct { ProductId = request.ProductId });
+            user.Cart.Products.Add(new CartProduct { ProductId = request.ProductId });
         }
         else
         {
             productInCart.NumberOfProduct++;
         }
 
+        user.Cart.TotalPrice += product.Price ?? 0;
         user.NumberInCart += 1;
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
@@ -138,20 +142,23 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        var productInCart = user.Cart.Find(x => x.ProductId == request.ProductId);
+        var product = await _productRepo.GetProductByIdAsync(request.ProductId).ConfigureAwait(false)
+                      ?? throw new ProductNotFoundException();
+        
+        var productInCart = user.Cart.Products.Find(x => x.ProductId == request.ProductId);
         if (productInCart == null)
-        {
             return response;
-        }
-        else if (productInCart.NumberOfProduct == 1)
+        
+        if (productInCart.NumberOfProduct == 1)
         {
-            user.Cart.Remove(productInCart);
+            user.Cart.Products.Remove(productInCart);
         }
         else
         {
             productInCart.NumberOfProduct--;
         }
 
+        user.Cart.TotalPrice -= product.Price ?? 0;
         user.NumberInCart = Math.Max(user.NumberInCart - 1, 0);
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
@@ -167,7 +174,8 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        user.Cart.Clear();
+        user.Cart.Products.Clear();
+        user.Cart.TotalPrice = 0.0;
         user.NumberInCart = 0;
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
@@ -176,7 +184,7 @@ public class UserService
         return response;
     }
 
-    public async Task<List<CartPreviewsResponse>> GetCartAsync(GetCartRequest request)
+    public async Task<CartResponse> GetCartAsync(GetCartRequest request)
     {
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
@@ -193,7 +201,7 @@ public class UserService
 
         var savedCart = new SavedCart
         {
-            Products = user.Cart
+            Cart = user.Cart
         };
 
         user.SavedCarts.Add(savedCart);
@@ -223,11 +231,33 @@ public class UserService
         return response;
     }
 
+    public async Task<List<SavedCartResponse>> GetSavedCartsAsync(SavedCartsRequest request)
+    {
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+                   ?? throw new UserNotFoundException();
+
+        List<SavedCartResponse> cartResponses = [];
+        foreach (var cart in user.SavedCarts)
+        {
+            var response = new SavedCartResponse
+            {
+                CartId = cart.Id,
+                Date = cart.Date,
+                NumberOfProducts = cart.Cart.NumberOfProducts,
+                TotalPrice = cart.Cart.TotalPrice
+            };
+
+            cartResponses.Add(response);
+        }
+
+        return cartResponses;
+    }
+
     public async Task<UserRatingsResponse> GetUserRatingsAsync(UserRatingsRequest request)
     {
         var response = new UserRatingsResponse();
 
-        int lastPageShown = 0;
+        var lastPageShown = 0;
         var lastShownValue = await _cache.GetCacheValue($"{_lastPageShownKey}-{request.UserId}").ConfigureAwait(false);
         if (!string.IsNullOrEmpty(lastShownValue) && int.TryParse(lastShownValue, out var value))
             lastPageShown = value;
@@ -294,7 +324,7 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        List<Nutrients> nutrientsInRange = [];
+        List<Nutrients> nutrientsInRange;
         if (request.DateRange.EndDate == null)
         {
             nutrientsInRange = [.. user.TrackedNutrients.Where(x => x.Date.Date == request.DateRange.StartDate.Date)];

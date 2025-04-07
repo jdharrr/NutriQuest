@@ -137,9 +137,9 @@ public class UserController : ControllerBase
         {
             return NotFound(ex.Message);
         }
-        catch (ProductExistsException ex)
+        catch (ProductNotFoundException ex)
         {
-            return Conflict(ex.Message);
+            return NotFound(ex.Message);
         }
         catch (Exception)
         {
@@ -158,6 +158,10 @@ public class UserController : ControllerBase
             return Ok(await _userService.DeleteProductFromCartAsync(request).ConfigureAwait(false));
         }
         catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (ProductNotFoundException ex)
         {
             return NotFound(ex.Message);
         }
@@ -236,6 +240,26 @@ public class UserController : ControllerBase
         try
         {
             return Ok(await _userService.RemoveSavedCartAsync(request).ConfigureAwait(false));
+        }
+        catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return Problem(_genericProblemResponse);
+        }
+    }
+
+    [HttpGet("getSavedCarts")]
+    public async Task<IActionResult> GetSavedCartsAsync([FromQuery] SavedCartsRequest request)
+    {
+        if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
+            return BadRequest("Invalid Parameter");
+
+        try
+        {
+            return Ok(await _userService.GetSavedCartsAsync(request).ConfigureAwait(false));
         }
         catch (UserNotFoundException ex)
         {
