@@ -2,7 +2,7 @@
 using DatabaseServices.Responses;
 using MongoDB.Driver;
 
-namespace DatabaseServices;
+namespace DatabaseWork.LocalServices;
 
 public class DatabaseService<TModel>
     where TModel : IMongoDocument

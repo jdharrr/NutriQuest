@@ -1,95 +1,43 @@
-﻿// using DatabaseServices;
-// using DatabaseServices.Models;
-// using MongoDB.Bson;
-// using MongoDB.Driver;
-//
-//
-// //************************************************************************************************************
-// // Just used to quickly interact with the database... not intended for actual nutriquest services interactions
-// //************************************************************************************************************
-//
-//
-// var mongoSettings = new MongoSettings
-// {
-//     ConnectionString = "",
-//     Name = "nutriQuest"
-// };
-// var mongoService = new DatabaseWork.LocalServices.MongoService(mongoSettings);
-// var userRepo = new DatabaseWork.LocalServices.DatabaseService<User>(mongoService);
-//
-
+﻿using DatabaseServices;
 using DatabaseServices.Models;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
-var itemRatings = new List<ProductRating>();
-//
-// var rand = new Random();
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6403272b198c24fa740",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6403272b198c24fa741",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6413272b198c24fa742",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6413272b198c24fa743",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6413272b198c24fa744",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6413272b198c24fa745",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6413272b198c24fa746",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6413272b198c24fa747",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6413272b198c24fa748",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6413272b198c24fa749",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// itemRatings.Add(new ItemRating
-// {
-//     ItemId = "67b2b6413272b198c24fa74a",
-//     Rating = (int)rand.NextInt64(5),
-// });
-//
-// var filter = Builders<User>.Filter.Eq(x => x.Id, "67bcfa2717146e7f1b715a98");
-// var update = Builders<User>.Update.Set(x => x.Ratings, itemRatings);
-// await userRepo.UpdateOneAsync(filter, update).ConfigureAwait(false);
+var mongoSettings = new MongoSettings
+{
+    ConnectionString = "",
+    Name = "nutriQuest"
+};
+var mongoService = new DatabaseWork.LocalServices.MongoService(mongoSettings);
+var productRepo = new DatabaseWork.LocalServices.DatabaseService<Product>(mongoService);
+var storeRepo = new DatabaseWork.LocalServices.DatabaseService<Store>(mongoService);
+
+var productFilter = Builders<Product>.Filter.Empty;
+var products = await productRepo.FindAsync(productFilter).ConfigureAwait(false);
+
+var storeFilter = Builders<Store>.Filter.Empty;
+var stores = await storeRepo.FindAsync(storeFilter).ConfigureAwait(false);
+
+var rand = new Random();
+
+var inclusionProbability = 0.4;
+
+var bulkOps = new List<WriteModel<Product>>();
+foreach (var product in products)
+{
+    List<string> storesInStock = [];
+    foreach (var store in stores)
+    {
+        if (rand.NextDouble() < inclusionProbability)
+        {
+            storesInStock.Add(store.Id);
+        }
+    }
+
+    var updateFilter = Builders<Product>.Filter.Eq(x => x.Id, product.Id);
+    var update = Builders<Product>.Update.Set(x => x.StoresInStock, storesInStock);
+    bulkOps.Add(new UpdateOneModel<Product>(updateFilter, update));
+}
+
+if (bulkOps.Count > 0)
+    await productRepo.BulkWriteAsync(bulkOps).ConfigureAwait(false);

@@ -242,7 +242,7 @@ public class UserService
             var response = new SavedCartResponse
             {
                 CartId = cart.Id,
-                Date = cart.Date,
+                Date = cart.Date.ToString("MMM dd, yyyy"),
                 NumberOfProducts = cart.Cart.NumberOfProducts,
                 TotalPrice = cart.Cart.TotalPrice
             };

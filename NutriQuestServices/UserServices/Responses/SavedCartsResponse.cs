@@ -4,7 +4,7 @@ public class SavedCartResponse
 {
     public string CartId { get; set; }
     
-    public DateTime Date { get; set; }
+    public string Date { get; set; }
     
     public double TotalPrice { get; set; }
     
