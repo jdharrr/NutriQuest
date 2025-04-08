@@ -9,19 +9,19 @@ public class ProductPreviewsRequest
     public required bool RestartPaging { get; set; }
 
     public FilterOptions Filters { get; set; } = new();
-    
-    public string? Sort { get; set; }
+
+    public string Sort { get; set; } = string.Empty;
 }
 
 public class FilterOptions
 {
-    public string? MainCategory { get; set; }
+    public string MainCategory { get; set; } = string.Empty;
 
-    public string? SubCategory { get; set; }
+    public string SubCategory { get; set; } = string.Empty;
 
-    public List<string>? Restrictions { get; set; }
+    public List<string> Restrictions { get; set; } = [];
 
-    public List<string>? ExcludedIngredients { get; set; }
+    public List<string> ExcludedIngredients { get; set; } = [];
 
-    public List<string>? ExcludedCustomIngredients { get; set; }
+    public List<string> ExcludedCustomIngredients { get; set; } = [];
 }

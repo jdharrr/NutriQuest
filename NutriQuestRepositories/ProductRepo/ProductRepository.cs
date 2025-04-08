@@ -53,7 +53,7 @@ public class ProductRepository
         return product;
     }
 
-    public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(string sessionId, bool prevPage, bool restartPaging, string? mainCategory, string? subCategory, List<string>? restrictions, List<string>? excludedIngredients, List<string>? excludedCustomIngredients, string? sort)
+    public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(string sessionId, bool prevPage, bool restartPaging, string mainCategory, string subCategory, List<string> restrictions, List<string> excludedIngredients, List<string> excludedCustomIngredients, string sort)
     {
         var findOptions = new FindOptions<Product, ProductPreviewsResponse>
         {
@@ -74,19 +74,19 @@ public class ProductRepository
         // Sorting
         var sortProperty = "_id";
         var sortPropertyType = typeof(string);
-        if (sort != null)
+        if (!string.IsNullOrEmpty(sort))
         {
             var propertyName = SortOptionsHelper.GetProductPropertyForSort(sort);
             if (!string.IsNullOrEmpty(propertyName))
                 sortProperty = propertyName;
             
             var productType = typeof(Product);
-            var sortproperty = productType.GetProperty(char.ToUpper(propertyName[0]) + propertyName[1..]);
-            if (sortproperty != null)
-                sortPropertyType = sortproperty.PropertyType;
+            var sortPropertyInfo = productType.GetProperty(char.ToUpper(propertyName[0]) + propertyName[1..]);
+            if (sortPropertyInfo != null)
+                sortPropertyType = sortPropertyInfo.PropertyType;
         }
         
-        if (sort != null)
+        if (!string.IsNullOrEmpty(sort))
         {
             var sortDefinition = Builders<Product>.Sort.Combine(sort.Contains("Descending") ? Builders<Product>.Sort.Descending(sortProperty)
                                                                                             : Builders<Product>.Sort.Ascending(sortProperty),
@@ -98,13 +98,13 @@ public class ProductRepository
         List<FilterDefinition<Product>> filters = [];
 
         // Category Filtering
-        if (mainCategory != null)
+        if (!string.IsNullOrEmpty(mainCategory))
         {
             var mainCategoryRegex = CategoryEnumHelper.GetMainFoodCategoryRegex(mainCategory);
             if (!string.IsNullOrEmpty(mainCategoryRegex))
                 filters.Add(Builders<Product>.Filter.Regex(x => x.Categories, new BsonRegularExpression(mainCategoryRegex, "i")));
 
-            if (subCategory != null)
+            if (!string.IsNullOrEmpty(subCategory))
             {
                 var subCategoryRegex = CategoryEnumHelper.GetSubCategoryRegex(mainCategory, subCategory);
                 if (!string.IsNullOrEmpty(subCategoryRegex))
@@ -113,7 +113,7 @@ public class ProductRepository
         }
 
         // Ingredient Filtering
-        if (restrictions != null)
+        if (restrictions.Count > 0)
         {
             foreach (var restriction in restrictions)
             {
@@ -127,7 +127,7 @@ public class ProductRepository
             }
         }
 
-        if (excludedIngredients != null)
+        if (excludedIngredients.Count > 0)
         {
             foreach (var ingredient in excludedIngredients)
             {
@@ -141,7 +141,7 @@ public class ProductRepository
             }
         }
 
-        if (excludedCustomIngredients != null)
+        if (excludedCustomIngredients.Count > 0)
         {
             foreach (var customIngredient in excludedCustomIngredients)
             {
@@ -193,7 +193,7 @@ public class ProductRepository
 
         if (!prevPage)
         {
-            if (sort != null)
+            if (!string.IsNullOrEmpty(sort))
             {
                 var sortPropertyValue = foodItems.Last().GetType().GetProperty(char.ToUpper(sortProperty[0]) + sortProperty[1..])?.GetValue(foodItems.Last())?.ToString();
                 if (sortPropertyValue != null)
