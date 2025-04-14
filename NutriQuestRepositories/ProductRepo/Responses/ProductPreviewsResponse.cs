@@ -2,15 +2,15 @@ namespace NutriQuestRepositories.ProductRepo.Responses;
 
 public class ProductPreviewsResponse
 {
-    public string? Id { get; set; }
+    public required string Id { get; set; }
 
-    public string? ProductName { get; set; }
+    public required string ProductName { get; set; }
 
-    public double? Price { get; set; }
+    public required double Price { get; set; }
 
-    public List<string>? StoresInStock { get; set; }
+    public List<string> StoresInStock { get; set; } = [];
 
-    public string? Brands { get; set; }
+    public required string Brands { get; set; }
 
-    public double? Rating { get; set; }
+    public required double Rating { get; set; }
 }
