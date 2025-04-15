@@ -62,10 +62,10 @@ public class ProductRepository
                 new ProductPreviewsResponse
                 {
                     Id = x.Id,
-                    ProductName = x.ProductName,
-                    Price = x.Price,
-                    StoresInStock = x.StoresInStock,
-                    Brands = x.Brands,
+                    ProductName = x.ProductName ?? "Unknown Product",
+                    Price = x.Price ?? 0.0,
+                    StoresInStock = x.StoresInStock ?? new List<string>(),
+                    Brands = x.Brands ?? "Unkown Brand",
                     Rating = x.Rating
                 }
             )
@@ -253,10 +253,10 @@ public class ProductRepository
                 new ProductPreviewsResponse
                 {
                     Id = x.Id,
-                    ProductName = x.ProductName,
-                    Price = x.Price,
-                    StoresInStock = x.StoresInStock,
-                    Brands = x.Brands,
+                    ProductName = x.ProductName ?? "Unknown Product",
+                    Price = x.Price ?? 0.0,
+                    StoresInStock = x.StoresInStock ?? new List<string>(),
+                    Brands = x.Brands ?? "Unknown Brand",
                     Rating = x.Rating
                 }
            )
