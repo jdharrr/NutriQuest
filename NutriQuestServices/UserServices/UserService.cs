@@ -300,16 +300,27 @@ public class UserService
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
 
-        var entry = new Nutrients
+        var existingEntry = user.TrackedNutrients.Find(x => x.Date.Date == request.Nutrients.Date.Date);
+        if (existingEntry != null)
         {
-            Calories = request.Nutrients.Calories,
-            Fats = request.Nutrients.Fats,
-            Proteins = request.Nutrients.Proteins,
-            Carbs = request.Nutrients.Carbs,
-            Date = request.Nutrients.Date
-        };
-
-        user.TrackedNutrients.Add(entry);
+            existingEntry.Calories += request.Nutrients.Calories;
+            existingEntry.Fats += request.Nutrients.Fats;
+            existingEntry.Proteins += request.Nutrients.Proteins;
+            existingEntry.Carbs += request.Nutrients.Carbs;
+        }
+        else 
+        {
+            var entry = new Nutrients
+            {
+                Calories = request.Nutrients.Calories,
+                Fats = request.Nutrients.Fats,
+                Proteins = request.Nutrients.Proteins,
+                Carbs = request.Nutrients.Carbs,
+                Date = request.Nutrients.Date
+            };
+            
+            user.TrackedNutrients.Add(entry);
+        }
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.AddNutrientsSuccess = updateResponse.ModifiedCount == 1;
