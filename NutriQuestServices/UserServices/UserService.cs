@@ -18,7 +18,7 @@ public class UserService
 
     private readonly CacheService _cache;
 
-    private readonly int _ratingsPerPage = 3;
+    private readonly int _ratingsPerPage = 4;
 
     private readonly string _lastPageShownKey = "lastPageNum";
 
@@ -259,9 +259,16 @@ public class UserService
         var response = new UserRatingsResponse();
 
         var lastPageShown = 0;
-        var lastShownValue = await _cache.GetCacheValue($"{_lastPageShownKey}-{request.UserId}").ConfigureAwait(false);
-        if (!string.IsNullOrEmpty(lastShownValue) && int.TryParse(lastShownValue, out var value))
-            lastPageShown = value;
+        if (request.RestartPaging)
+        {
+            await _cache.DeleteCacheValue($"{_lastPageShownKey}-{request.UserId}");
+        }
+        else
+        {
+            var lastShownValue = await _cache.GetCacheValue($"{_lastPageShownKey}-{request.UserId}").ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(lastShownValue) && int.TryParse(lastShownValue, out var value))
+                lastPageShown = value;
+        }
 
         var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
             ?? throw new UserNotFoundException();
@@ -281,7 +288,7 @@ public class UserService
                 ProductName = item.ProductName,
                 Rating = rating.Rating,
                 Comment = rating.Comment,
-                Date = rating.Date,
+                Date = rating.Date.ToString("MMM dd, yyyy"),
                 ImageUrl = item.ImageUrl
             });
         }

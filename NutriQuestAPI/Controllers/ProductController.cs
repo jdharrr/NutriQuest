@@ -2,6 +2,7 @@
 using NutriQuestServices.ProductServices;
 using NutriQuestServices.UserServices;
 using NutriQuestServices.ProductServices.Requests;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NutriQuestAPI.Controllers;
 
@@ -91,6 +92,7 @@ public class ProductController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPost("addProductRating")]
     public async Task<IActionResult> AddProductRatingAsync([FromBody] AddRatingRequest request)
     {

@@ -64,7 +64,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpDelete("deleteFromFavorites")]
+    [HttpDelete("removeFromFavorites")]
     public async Task<IActionResult> DeleteProductFromFavoritesAsync([FromQuery] FavoritesDeleteRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
@@ -147,7 +147,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpDelete("deleteFromCart")]
+    [HttpDelete("removeFromCart")]
     public async Task<IActionResult> DeleteProductFromFavoritesAsync([FromQuery] DeleteFromCartRequest request)
     {
         if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))

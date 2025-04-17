@@ -85,6 +85,9 @@ public class ProductService
         return await _productRepo.GetProductPreviewsPagingAsync(request.SessionId, request.PrevPage, request.RestartPaging, request.Filters.MainCategory, request.Filters.SubCategory, request.Filters.Restrictions, request.Filters.ExcludedIngredients, request.Filters.ExcludedCustomIngredients, request.Sort).ConfigureAwait(false);
     }
 
+    // Dictionary key is stored as a string as this is a requirement by Mongo
+    // Key: Amount of stars
+    // Value: Number of reviews for given star amount
     public async Task<AddRatingResponse> AddProductRatingAsync(AddRatingRequest request)
     {
         var response = new AddRatingResponse();
@@ -92,18 +95,18 @@ public class ProductService
         var item = await _productRepo.GetProductByIdAsync(request.ProductId).ConfigureAwait(false)
             ?? throw new ProductNotFoundException();
 
-        if (!item.AllRatings.TryGetValue(request.Rating, out _))
+        if (!item.AllRatings.TryGetValue(request.Rating.ToString(), out _))
         {
-            item.AllRatings[request.Rating] = 0;
+            item.AllRatings[request.Rating.ToString()] = 0;
         }
         
-        item.AllRatings[request.Rating]++;
+        item.AllRatings[request.Rating.ToString()]++;
         item.NumberOfRatings++;
 
         int total = 0;
         foreach (var kvp in item.AllRatings)
         {
-            total += (kvp.Value * kvp.Key);
+            total += kvp.Value * Convert.ToInt32(kvp.Key);
         }
 
         item.Rating = Math.Round((double)total / item.NumberOfRatings, 1);

@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Options;
 
 namespace DatabaseServices.Models;
 
@@ -49,7 +50,7 @@ public class Product : BaseModel, IMongoDocument
 
     public double? Price { get; set; } = 0.00;
 
-    public Dictionary<int, int> AllRatings = [];
+    public Dictionary<string, int> AllRatings = [];
 
     public double Rating { get; set; } = 0.0;
 
