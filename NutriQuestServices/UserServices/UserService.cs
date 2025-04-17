@@ -40,6 +40,7 @@ public class UserService
             Email = user.Email,
             NumberInCart = user.NumberInCart,
             NumberInFavorites = user.NumberInFavorites,
+            Favorites = user.Favorites,
             NumberTrackedNutrients = user.NumberTrackedNutrients
         };
     }

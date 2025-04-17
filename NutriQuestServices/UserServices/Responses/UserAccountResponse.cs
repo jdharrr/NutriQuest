@@ -10,5 +10,7 @@ public class UserAccountResponse
 
     public int NumberInFavorites { get; set; }
 
+    public List<string> Favorites { get; set; } = [];
+
     public int NumberTrackedNutrients { get; set; }
 }
