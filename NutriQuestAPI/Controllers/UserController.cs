@@ -271,6 +271,29 @@ public class UserController : ControllerBase
         }
     }
 
+    [HttpGet("getSavedCart")]
+    public async Task<IActionResult> GetSavedCartAsync([FromQuery] SavedCartRequest request)
+    {
+        if (!MongoDB.Bson.ObjectId.TryParse(request.UserId, out var _))
+            return BadRequest("Invalid Parameter");
+        
+        if (!MongoDB.Bson.ObjectId.TryParse(request.CartId, out var _))
+            return BadRequest("Invalid Parameter");
+
+        try
+        {
+            return Ok(await _userService.GetSavedCartAsync(request).ConfigureAwait(false));
+        }
+        catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return Problem(_genericProblemResponse);
+        }
+    }
+
     [HttpGet("getRatings")]
     public async Task<IActionResult> GetUserRatingsAsync([FromQuery] UserRatingsRequest request)
     {

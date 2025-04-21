@@ -254,6 +254,18 @@ public class UserService
         return cartResponses;
     }
 
+    public async Task<CartResponse> GetSavedCartAsync(SavedCartRequest request)
+    {
+        var user = await _userRepo.GetUserByIdAsync(request.UserId).ConfigureAwait(false)
+                   ?? throw new UserNotFoundException();
+
+        var cart = user.SavedCarts.Find(x => x.Id == request.CartId); ;
+        if (cart == null)
+            return new CartResponse();
+
+        return await _productRepo.GetCartPreviewsAsync(cart.Cart).ConfigureAwait(false);
+    }
+
     public async Task<UserRatingsResponse> GetUserRatingsAsync(UserRatingsRequest request)
     {
         var response = new UserRatingsResponse();
