@@ -24,4 +24,6 @@ public class FilterOptions
     public List<string> ExcludedIngredients { get; set; } = [];
 
     public List<string> ExcludedCustomIngredients { get; set; } = [];
+
+    public string Store { get; set; } = string.Empty;
 }

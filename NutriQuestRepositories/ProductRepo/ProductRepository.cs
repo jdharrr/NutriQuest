@@ -53,7 +53,7 @@ public class ProductRepository
         return product;
     }
 
-    public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(string sessionId, bool prevPage, bool restartPaging, string mainCategory, string subCategory, List<string> restrictions, List<string> excludedIngredients, List<string> excludedCustomIngredients, string sort)
+    public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(string sessionId, bool prevPage, bool restartPaging, string mainCategory, string subCategory, List<string> restrictions, List<string> excludedIngredients, List<string> excludedCustomIngredients, string sort, string store)
     {
         var findOptions = new FindOptions<Product, ProductPreviewsResponse>
         {
@@ -156,6 +156,12 @@ public class ProductRepository
                     )
                 );
             }
+        }
+        
+        // Store Filtering
+        if (!string.IsNullOrEmpty(store))
+        {
+            filters.Add(Builders<Product>.Filter.AnyEq(x => x.StoresInStock, store));
         }
 
         // Pagination

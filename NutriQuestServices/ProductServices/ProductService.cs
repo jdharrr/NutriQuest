@@ -82,7 +82,7 @@ public class ProductService
 
     public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(ProductPreviewsRequest request)
     {
-        return await _productRepo.GetProductPreviewsPagingAsync(request.SessionId, request.PrevPage, request.RestartPaging, request.Filters.MainCategory, request.Filters.SubCategory, request.Filters.Restrictions, request.Filters.ExcludedIngredients, request.Filters.ExcludedCustomIngredients, request.Sort).ConfigureAwait(false);
+        return await _productRepo.GetProductPreviewsPagingAsync(request.SessionId, request.PrevPage, request.RestartPaging, request.Filters.MainCategory, request.Filters.SubCategory, request.Filters.Restrictions, request.Filters.ExcludedIngredients, request.Filters.ExcludedCustomIngredients, request.Sort, request.Filters.Store).ConfigureAwait(false);
     }
 
     // Dictionary key is stored as a string as this is a requirement by Mongo
