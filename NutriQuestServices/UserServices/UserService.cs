@@ -120,15 +120,15 @@ public class UserService
         var productInCart = user.Cart.Products.Find(x => x.ProductId == product.Id);
         if (productInCart == null)
         {
-            user.Cart.Products.Add(new CartProduct { ProductId = request.ProductId });
+            user.Cart.Products.Add(new CartProduct { ProductId = request.ProductId, NumberOfProduct = request.NumberOfItem });
         }
         else
         {
-            productInCart.NumberOfProduct++;
+            productInCart.NumberOfProduct += request.NumberOfItem;
         }
 
-        user.Cart.TotalPrice += product.Price ?? 0;
-        user.NumberInCart += 1;
+        user.Cart.TotalPrice += (product.Price ?? 0) * request.NumberOfItem;
+        user.NumberInCart += request.NumberOfItem;
 
         var updateResponse = await _userRepo.UpdateCompleteUserAsync(user).ConfigureAwait(false);
         response.AddSuccess = updateResponse.ModifiedCount == 1;
