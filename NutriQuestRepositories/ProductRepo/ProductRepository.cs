@@ -78,14 +78,16 @@ public class ProductRepository
         {
             var propertyName = SortOptionsHelper.GetProductPropertyForSort(sort);
             if (!string.IsNullOrEmpty(propertyName))
+            {
                 sortProperty = propertyName;
-            
-            var productType = typeof(Product);
-            var sortPropertyInfo = productType.GetProperty(char.ToUpper(propertyName[0]) + propertyName[1..]);
-            if (sortPropertyInfo != null)
-                sortPropertyType = sortPropertyInfo.PropertyType;
+
+                var productType = typeof(Product);
+                var sortPropertyInfo = productType.GetProperty(char.ToUpper(propertyName[0]) + propertyName[1..]);
+                if (sortPropertyInfo != null)
+                    sortPropertyType = sortPropertyInfo.PropertyType;
+            }
         }
-        
+
         if (!string.IsNullOrEmpty(sort))
         {
             var sortDefinition = Builders<Product>.Sort.Combine(sort.Contains("Descending") ? Builders<Product>.Sort.Descending(sortProperty)
@@ -281,7 +283,7 @@ public class ProductRepository
                 {
                     Id = x.Id,
                     ProductName = x.ProductName,
-                    Price = x.Price,
+                    Price = x.Price ?? 0.0,
                     StoresInStock = x.StoresInStock,
                 }
            )

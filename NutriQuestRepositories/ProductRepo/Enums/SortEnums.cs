@@ -2,6 +2,7 @@ namespace NutriQuestRepositories.ProductRepo.Enums;
 
 public enum SortOptions
 {
+    None,
     PriceDescending,
     PriceAscending,
     BrandsAlphabetically,
@@ -13,6 +14,7 @@ public static class SortOptionsHelper
     // These MUST match the properties in the Product model
     private static readonly Dictionary<SortOptions, string> _sortOptions = new()
     {
+        {SortOptions.None, ""},
         { SortOptions.PriceDescending, "price" },
         { SortOptions.PriceAscending, "price" },
         { SortOptions.BrandsAlphabetically, "brands" },
