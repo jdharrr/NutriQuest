@@ -14,14 +14,17 @@ public class ProductService
 
     private readonly UserRepository _userRepo;
 
+    private readonly StoreRepository _storeRepo;
+
     private readonly string _categoryEnumsNamespace;
 
     private readonly string _categoryEnumsAssembly;
 
-    public ProductService(ProductRepository productRepo, UserRepository userRepo)
+    public ProductService(ProductRepository productRepo, UserRepository userRepo, StoreRepository storeRepo)
     {
         _productRepo = productRepo;
         _userRepo = userRepo;
+        _storeRepo = storeRepo;
 
         // Set the namespace of the food enums so we can ensure we can find the sub categories w/ reflection
         _categoryEnumsNamespace = typeof(MainFoodCategories).Namespace ?? "";
@@ -82,7 +85,11 @@ public class ProductService
 
     public async Task<List<ProductPreviewsResponse>> GetProductPreviewsPagingAsync(ProductPreviewsRequest request)
     {
-        return await _productRepo.GetProductPreviewsPagingAsync(request.SessionId, request.PrevPage, request.RestartPaging, request.Filters.MainCategory, request.Filters.SubCategory, request.Filters.Restrictions, request.Filters.ExcludedIngredients, request.Filters.ExcludedCustomIngredients, request.Sort, request.Filters.Store).ConfigureAwait(false);
+        List<string> stores = [];
+        if (request.Filters.Stores.Count > 0)
+            stores = await _storeRepo.GetIdsByNames(request.Filters.Stores).ConfigureAwait(false);
+
+        return await _productRepo.GetProductPreviewsPagingAsync(request.SessionId, request.PrevPage, request.RestartPaging, request.Filters.MainCategory, request.Filters.SubCategory, request.Filters.Restrictions, request.Filters.ExcludedIngredients, request.Filters.ExcludedCustomIngredients, request.Sort, stores).ConfigureAwait(false);
     }
 
     // Dictionary key is stored as a string as this is a requirement by Mongo
