@@ -66,7 +66,8 @@ public class ProductRepository
                     Price = x.Price ?? 0.0,
                     StoresInStock = x.StoresInStock ?? new List<string>(),
                     Brands = x.Brands ?? "Unkown Brand",
-                    Rating = x.Rating
+                    Rating = x.Rating,
+                    NumberOfRatings = x.NumberOfRatings
                 }
             )
         };
@@ -88,12 +89,16 @@ public class ProductRepository
             }
         }
 
-        if (!string.IsNullOrEmpty(sort))
+        if (sort != SortOptions.None.ToString())
         {
             var sortDefinition = Builders<Product>.Sort.Combine(sort.Contains("Descending") ? Builders<Product>.Sort.Descending(sortProperty)
                                                                                             : Builders<Product>.Sort.Ascending(sortProperty),
                                                                                               Builders<Product>.Sort.Ascending(x => x.Id));
             findOptions.Sort = sortDefinition;
+        }
+        else
+        {
+            findOptions.Sort = Builders<Product>.Sort.Ascending(x => x.Id);
         }
 
         // Collection of all needed filters for find query
@@ -201,15 +206,14 @@ public class ProductRepository
 
         if (!prevPage)
         {
-            if (!string.IsNullOrEmpty(sort))
+            var sortPropertyValue = foodItems.Last().GetType().GetProperty(char.ToUpper(sortProperty[0]) + sortProperty[1..])?.GetValue(foodItems.Last())?.ToString();
+            if (sortPropertyValue != null)
             {
-                var sortPropertyValue = foodItems.Last().GetType().GetProperty(char.ToUpper(sortProperty[0]) + sortProperty[1..])?.GetValue(foodItems.Last())?.ToString();
-                if (sortPropertyValue != null)
-                    recordsShown.Add(new CacheRecord { Id = foodItems.Last().Id!, Sort = sortPropertyValue });
+                recordsShown.Add(new CacheRecord { Id = foodItems.Last().Id!, Sort = sortPropertyValue });
             }
             else
             {
-                recordsShown.Add(new CacheRecord { Id = foodItems.Last().Id!, Sort = foodItems.Last().Id!} );
+                recordsShown.Add(new CacheRecord { Id = foodItems.Last().Id!, Sort = foodItems.Last().Id! });
             }
         }
 
@@ -222,7 +226,7 @@ public class ProductRepository
     private static FilterDefinition<Product> BuildPreviewsPaginationFilter(CacheRecord prevRecord, string? sort, string sortProperty, Type sortType)
     {
         var idFilter = Builders<Product>.Filter.Gt(x => x.Id, prevRecord.Id);
-        if (sort == null)
+        if (sort == SortOptions.None.ToString())
             return idFilter;
 
         FilterDefinition<Product> sortFilter;
@@ -265,7 +269,8 @@ public class ProductRepository
                     Price = x.Price ?? 0.0,
                     StoresInStock = x.StoresInStock ?? new List<string>(),
                     Brands = x.Brands ?? "Unknown Brand",
-                    Rating = x.Rating
+                    Rating = x.Rating,
+                    NumberOfRatings = x.NumberOfRatings
                 }
            )
         };

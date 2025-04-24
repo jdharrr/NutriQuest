@@ -13,4 +13,6 @@ public class ProductPreviewsResponse
     public required string Brands { get; set; }
 
     public required double Rating { get; set; }
+    
+    public required int NumberOfRatings { get; set; }
 }

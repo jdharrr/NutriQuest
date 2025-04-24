@@ -1,6 +1,5 @@
 ﻿using DatabaseServices;
 using DatabaseServices.Models;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 var mongoSettings = new MongoSettings
@@ -19,23 +18,21 @@ var storeFilter = Builders<Store>.Filter.Empty;
 var stores = await storeRepo.FindAsync(storeFilter).ConfigureAwait(false);
 
 var rand = new Random();
-
-var inclusionProbability = 0.4;
+double[] priceEndings = [0.00, 0.25, 0.49, 0.50, 0.75, 0.95, 0.99];
 
 var bulkOps = new List<WriteModel<Product>>();
 foreach (var product in products)
 {
-    List<string> storesInStock = [];
-    foreach (var store in stores)
-    {
-        if (rand.NextDouble() < inclusionProbability)
-        {
-            storesInStock.Add(store.Id);
-        }
-    }
+    // Base price between 1 and 49 dollars
+    var dollars = rand.Next(1, 50);
+    
+    // Randomly choose a realistic decimal ending
+    var cents = priceEndings[rand.Next(priceEndings.Length)];
+
+    var price = Math.Round(dollars + cents, 2);
 
     var updateFilter = Builders<Product>.Filter.Eq(x => x.Id, product.Id);
-    var update = Builders<Product>.Update.Set(x => x.StoresInStock, storesInStock);
+    var update = Builders<Product>.Update.Set(x => x.Price, price);
     bulkOps.Add(new UpdateOneModel<Product>(updateFilter, update));
 }
 
