@@ -223,7 +223,7 @@ public class ProductRepository
         return foodItems;
     }
 
-    private static FilterDefinition<Product> BuildPreviewsPaginationFilter(CacheRecord prevRecord, string? sort, string sortProperty, Type sortType)
+    private static FilterDefinition<Product> BuildPreviewsPaginationFilter(CacheRecord prevRecord, string sort, string sortProperty, Type sortType)
     {
         var idFilter = Builders<Product>.Filter.Gt(x => x.Id, prevRecord.Id);
         if (sort == SortOptions.None.ToString())

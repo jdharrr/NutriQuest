@@ -10,7 +10,7 @@ public class ProductPreviewsRequest
 
     public FilterOptions Filters { get; set; } = new();
 
-    public string Sort { get; set; } = string.Empty;
+    public string Sort { get; set; } = "None";
 }
 
 public class FilterOptions
