@@ -15,7 +15,7 @@ public class EmailService
 
     public async Task SendPasswordResetEmail(string userEmail, string resetToken)
     {
-        string resetLink = $"https://yourapp.com/reset-password?token={resetToken}&email={userEmail}"; ;
+        var resetLink = $"https://proud-grass-047c1c410.6.azurestaticapps.net/reset_Password?token={resetToken}";
 
         var smtpClient = new SmtpClient("smtp.gmail.com")
         {

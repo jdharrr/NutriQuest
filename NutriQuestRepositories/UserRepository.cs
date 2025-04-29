@@ -25,7 +25,9 @@ public class UserRepository
 	{
         var filter = Builders<User>.Filter.Eq(x => x.Email, email);
 
-        return await _dbService.FindOneAsync(filter).ConfigureAwait(false);
+        var user = await _dbService.FindOneAsync(filter).ConfigureAwait(false);
+
+		return user;
     }
 
 	public async Task<UpdateResponse> UpdateCompleteUserAsync(User user)
