@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Text.Json;
+﻿using System.Text.Json;
 using CacheServices;
 using DatabaseServices;
 using DatabaseServices.Models;
@@ -69,7 +68,8 @@ public class ProductRepository
                     Rating = x.Rating,
                     NumberOfRatings = x.NumberOfRatings
                 }
-            )
+            ),
+            MaxTime = TimeSpan.FromSeconds(10)
         };
         
         // Sorting
@@ -239,8 +239,8 @@ public class ProductRepository
         else
         {
             sortFilter = sort.Contains("Descending")
-                ? Builders<Product>.Filter.Lt(sortProperty, Convert.ToInt32(prevRecord.Sort))
-                : Builders<Product>.Filter.Gt(sortProperty, Convert.ToInt32(prevRecord.Sort));
+                ? Builders<Product>.Filter.Lt(sortProperty, Convert.ToDouble(prevRecord.Sort))
+                : Builders<Product>.Filter.Gt(sortProperty, Convert.ToDouble(prevRecord.Sort));
         }
 
         return Builders<Product>.Filter.Or(
